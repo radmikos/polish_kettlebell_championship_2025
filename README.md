@@ -1,0 +1,1 @@
+# polish_kettlebell_championship_2025
