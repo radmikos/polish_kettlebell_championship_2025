@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kettlebell Points Calculator</title>
+
+    <link href="styles.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="calculator-card">
+      <div class="card-header">
+        <h1 class="card-title">Kalkulator Punktów</h1>
+        <p class="card-subtitle">
+          Mistrzostwa Polski Hardstyle Kettlebell 2025
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Płeć:</label>
+        <div class="gender-selection">
+          <button id="gender_female" class="gender-btn">Kobieta</button>
+          <button id="gender_male" class="gender-btn">Męzczyzna</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="competition" class="form-label">Wybierz konkurencje:</label>
+        <select id="competition" class="form-input">
+          <option value="tgu">TGU (Turkish Get-Up)</option>
+          <option value="see_saw_press">See Saw Press</option>
+          <option value="squat">Front Squat</option>
+          <option value="pistol">Pistol Squat</option>
+          <option value="pull_up">Pull-up</option>
+          <option value="snatch">Snatch</option>
+        </select>
+      </div>
+
+      <div class="input-grid">
+        <div class="form-group">
+          <label for="body_weight" class="form-label">Waga zawodnika:</label>
+          <input
+            type="number"
+            id="body_weight"
+            class="form-input"
+            placeholder="np. 80"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="kettlebell_weight" id="result_label" class="form-label"
+            >Waga kettlebell:</label
+          >
+          <input
+            type="number"
+            id="kettlebell_weight"
+            class="form-input"
+            placeholder="np. 24"
+          />
+        </div>
+      </div>
+
+      <div
+        id="kettlebell_weight_container"
+        class="form-group"
+        style="display: none"
+      >
+        <label for="repetitions" class="form-label">Ilość Powtórzeń:</label>
+        <input
+          type="number"
+          id="repetitions"
+          class="form-input"
+          placeholder="np. 10"
+        />
+      </div>
+
+      <div class="button-container">
+        <button id="calculate_button" class="calculate-btn">
+          OBLICZ WYNIK
+        </button>
+      </div>
+      <div id="result_output" class="result-output"></div>
+      <div id="error_output" class="error-output"></div>
+    </div>
+    <script src="script.js" defer></script>
+  </body>
+</html>
+
