@@ -1,3 +1,5 @@
+"""Django app configuration for the kb_live application."""
+
 from django.apps import AppConfig
 
 
