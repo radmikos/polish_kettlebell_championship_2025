@@ -1,9 +1,9 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from live_results.services.scoring import see_saw_points
+from live_results.services.scoring import squat_points
 from .bases import BaseBWPoints
 
-class SeeSawPressResult(BaseBWPoints):
+class SquatResult(BaseBWPoints):
     """
     kettlebell_weight = SUMA dwóch kettli (kg).
     """
@@ -11,19 +11,19 @@ class SeeSawPressResult(BaseBWPoints):
         "live_results.Player",
         on_delete=models.CASCADE,
         verbose_name=_("Zawodnik"),
-        related_name="see_saw_press_result",
+        related_name="squat_result",
     )
 
     class Meta:
-        verbose_name = _("Wynik See-Saw Press")
-        verbose_name_plural = _("Wyniki See-Saw Press")
+        verbose_name = _("Wynik KB Squat (2xKB suma)")
+        verbose_name_plural = _("Wyniki KB Squat (2xKB suma)")
 
     @property
     def points(self) -> float | None:
         ctx = self._ctx
         if not ctx:
             return None
-        return see_saw_points(ctx, float(self.kettlebell_weight or 0.0))
+        return squat_points(ctx, float(self.kettlebell_weight or 0.0))
 
     def __str__(self) -> str:
-        return f"{self.player} · See-Saw={self.points if self.points is not None else 'N/A'}"
+        return f"{self.player} · Squat={self.points if self.points is not None else 'N/A'}"
