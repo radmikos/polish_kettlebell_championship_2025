@@ -9,13 +9,13 @@ class PlayerCategoryTiebreak(models.Model):
     """
 
     player = models.ForeignKey(
-        "live_results.Player",
+        "kb_live.Player",
         on_delete=models.CASCADE,
         verbose_name=_("Zawodnik"),
         related_name="tiebreaks_applied",
     )
     category = models.ForeignKey(
-        "live_results.Category",
+        "kb_live.Category",
         on_delete=models.CASCADE,
         verbose_name=_("Kategoria"),
         related_name="tiebreaks_applied",
