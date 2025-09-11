@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from live_results.models import Category, CategoryOverallResult
+from kb_live.models import CategoryOverallResult
 
 class Command(BaseCommand):
     help = "Przelicza wyniki ogólne dla danej kategorii (lub wszystkich)."
