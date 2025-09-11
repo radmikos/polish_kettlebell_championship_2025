@@ -1,4 +1,3 @@
-from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -9,14 +8,6 @@ class BaseBWPoints(models.Model):
     """
     Baza dla wyników globalnych per zawodnik/konkurencja.
     """
-
-    kettlebell_weight = models.FloatField(
-        _("Waga kettlebell (kg)"),
-        default=0.0,
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(0.0)],
-    )
 
     class Meta:
         abstract = True
