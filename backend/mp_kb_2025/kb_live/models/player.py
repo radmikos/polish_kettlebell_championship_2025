@@ -28,7 +28,7 @@ class Player(models.Model):
     )
 
     club = models.ForeignKey(
-        "live_results.SportClub",
+        "kb_live.SportClub",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -36,7 +36,7 @@ class Player(models.Model):
         related_name="players",
     )
     categories = models.ManyToManyField(
-        "live_results.Category",
+        "kb_live.Category",
         verbose_name=_("Kategorie"),
         related_name="players",
         blank=True,

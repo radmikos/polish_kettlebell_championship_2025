@@ -1,11 +1,14 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from live_results.services.scoring import tgu_points
+
+from kb_live.services.scoring import tgu_points
+
 from .bases import BaseBWPoints
+
 
 class TGUResult(BaseBWPoints):
     player = models.OneToOneField(
-        "live_results.Player",
+        "kb_live.Player",
         on_delete=models.CASCADE,
         verbose_name=_("Zawodnik"),
         related_name="tgu_result",

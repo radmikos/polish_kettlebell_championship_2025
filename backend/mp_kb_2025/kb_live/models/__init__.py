@@ -1,6 +1,7 @@
 from .bases import BaseBWPoints
 from .category import Category
 from .choices import DISCIPLINE_NAMES, Discipline
+from .overall import CategoryOverallResult
 from .pistol import PistolResult
 from .placement import CategoryPlacement
 from .player import Player

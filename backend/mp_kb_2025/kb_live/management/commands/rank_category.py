@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
-from live_results.models import Category, CategoryPlacement, Discipline
+
+from kb_live.models import Category, CategoryPlacement, Discipline
+
 
 class Command(BaseCommand):
     help = "Nadaje miejsca w wybranej kategorii i konkurencji wg punktów (DESC)."
@@ -25,6 +27,6 @@ class Command(BaseCommand):
             r.position = i if r.points is not None else None
         CategoryPlacement.objects.bulk_update(rows, ["position"])
 
-        self.stdout.write(self.style.SUCCESS(
-            f"Nadano miejsca: kategoria='{category.name}', konkurencja='{disc}', n={len(rows)}"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(f"Nadano miejsca: kategoria='{category.name}', konkurencja='{disc}', n={len(rows)}")
+        )
