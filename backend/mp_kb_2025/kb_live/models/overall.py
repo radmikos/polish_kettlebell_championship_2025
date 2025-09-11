@@ -6,34 +6,40 @@ from django.utils.translation import gettext_lazy as _
 from .player import Player
 from .category import Category
 from .choices import Discipline
+from .placement import CategoryPlacement
 
 class CategoryOverallResult(models.Model):
     """
-    Syntetyczny wynik zawodnika w danej kategorii:
-    - zbiera punkty z DOZWOLONYCH w kategorii dyscyplin
-    - dolicza tiebreak (+1) jeśli istnieje wpis PlayerCategoryTiebreak
-    - przechowuje total + final_position do szybkich rankingów/eksportów
+    Syntetyczny wynik zawodnika w danej kategorii.
+
+    Zmodyfikowana logika (sumowanie miejsc):
+    1. Pola *_points przechowują SUROWE / ostatnio obliczone punkty z konkurencji.
+       Jeśli konkurencja jest dozwolona w kategorii, ale brak wyniku – wpisywane jest 0.0 (żeby rekord był "widoczny").
+       Jeśli konkurencja NIE jest dozwolona – pole = None.
+    2. total_points = suma miejsc (position) z CategoryPlacement dla dozwolonych konkurencji.
+       Jeśli brak jeszcze miejsc => total_points = 0.0 (żeby klas. ogólna była widoczna od razu po przypisaniu kategorii).
+    3. final_position ustalana osobno (ranking rosnąco po total_points).
+    4. Niższa wartość total_points jest lepsza.
     """
     player   = models.ForeignKey(Player,   on_delete=models.CASCADE, related_name="category_results",   verbose_name=_("Zawodnik"))
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="overall_results",    verbose_name=_("Kategoria"))
 
-    # Pola podglądowe (None gdy brak wyniku / konkurencja niedozwolona w kat.)
-    snatch_points       = models.FloatField(_("Punkty Snatch"),      null=True, blank=True)
-    tgu_points          = models.FloatField(_("Punkty TGU"),         null=True, blank=True)
-    squat_points        = models.FloatField(_("Punkty Squat"),       null=True, blank=True)           # 2xKB suma
-    see_saw_press_points= models.FloatField(_("Punkty See-Saw"),     null=True, blank=True)           # 2xKB suma
-    pistol_points       = models.FloatField(_("Punkty Pistol"),      null=True, blank=True)
-    pull_up_points      = models.FloatField(_("Punkty Pull-Up"),     null=True, blank=True)
+    snatch_points        = models.FloatField(_("Punkty Snatch"),      null=True, blank=True)
+    tgu_points           = models.FloatField(_("Punkty TGU"),         null=True, blank=True)
+    squat_points         = models.FloatField(_("Punkty Squat"),       null=True, blank=True)
+    see_saw_press_points = models.FloatField(_("Punkty See-Saw"),     null=True, blank=True)
+    pistol_points        = models.FloatField(_("Punkty Pistol"),      null=True, blank=True)
+    pull_up_points       = models.FloatField(_("Punkty Pull-Up"),     null=True, blank=True)
 
-    tiebreak_points = models.FloatField(_("Punkty Tiebreak"), default=0.0)  # zwykle 0 lub 1.0
-    total_points    = models.FloatField(_("Suma Punktów"),    null=True, blank=True, db_index=True)
+    tiebreak_points = models.FloatField(_("Punkty Tiebreak"), default=0.0)
+    total_points    = models.FloatField(_("Suma Miejsc"),    null=True, blank=True, db_index=True)
     final_position  = models.PositiveIntegerField(_("Miejsce Końcowe"), null=True, blank=True, db_index=True)
 
     class Meta:
         verbose_name = _("Wynik Ogólny Kategorii")
         verbose_name_plural = _("Wyniki Ogólne Kategorii")
         unique_together = ("player", "category")
-        ordering = ["category", "final_position", "-total_points"]
+        ordering = ["category", "final_position", "total_points"]  # niższe total_points lepsze
         indexes = [
             models.Index(fields=["category", "final_position"]),
             models.Index(fields=["category", "total_points"]),
@@ -43,9 +49,7 @@ class CategoryOverallResult(models.Model):
     def __str__(self) -> str:
         pos = self.final_position if self.final_position is not None else "N/A"
         pts = f"{self.total_points:.2f}" if self.total_points is not None else "N/A"
-        return f"[{self.category}] {self.player} · Miejsce: {pos} · Punkty: {pts}"
-
-    # --- API obliczeń ---
+        return f"[{self.category}] {self.player} · Miejsce: {pos} · Suma miejsc: {pts}"
 
     def _is_allowed(self, key: str) -> bool:
         """Czy dana dyscyplina jest dozwolona w tej kategorii?"""
@@ -63,32 +67,37 @@ class CategoryOverallResult(models.Model):
             Discipline.PULL_UP:       getattr(getattr(p, "pull_up_result", None), "points", None),
         }
 
+    def _placements_map(self) -> Dict[str, Optional[int]]:
+        allowed = [d for d in self.category.disciplines if isinstance(self.category.disciplines, list)] if isinstance(self.category.disciplines, list) else []
+        rows = CategoryPlacement.objects.filter(category=self.category, player=self.player, discipline__in=allowed)
+        out: Dict[str, Optional[int]] = {d: None for d in allowed}
+        for r in rows:
+            out[r.discipline] = r.position
+        return out
+
     def recompute(self, save: bool = True) -> None:
-        """
-        Przelicza pola *_points tylko dla konkurencji DOZWOLONYCH w kategorii,
-        dolicza tiebreak (+1), liczy total i opcjonalnie zapisuje.
-        """
+        # 1. Uaktualnij surowe punkty (dla podglądu) – tylko dla dozwolonych konkurencji.
         pts = self._points_map_from_player()
+        def val_or_zero(key):
+            if self._is_allowed(key):
+                v = pts[key]
+                return 0.0 if v is None else v
+            return None
+        self.snatch_points        = val_or_zero(Discipline.SNATCH)
+        self.tgu_points           = val_or_zero(Discipline.TGU)
+        self.squat_points         = val_or_zero(Discipline.SQUAT)
+        self.see_saw_press_points = val_or_zero(Discipline.SEE_SAW_PRESS)
+        self.pistol_points        = val_or_zero(Discipline.PISTOL)
+        self.pull_up_points       = val_or_zero(Discipline.PULL_UP)
 
-        # wypełnij pola per dyscyplina tylko gdy dozwolone w kategorii
-        self.snatch_points        = pts[Discipline.SNATCH]        if self._is_allowed(Discipline.SNATCH)        else None
-        self.tgu_points           = pts[Discipline.TGU]           if self._is_allowed(Discipline.TGU)           else None
-        self.squat_points         = pts[Discipline.SQUAT]         if self._is_allowed(Discipline.SQUAT)         else None
-        self.see_saw_press_points = pts[Discipline.SEE_SAW_PRESS] if self._is_allowed(Discipline.SEE_SAW_PRESS) else None
-        self.pistol_points        = pts[Discipline.PISTOL]        if self._is_allowed(Discipline.PISTOL)        else None
-        self.pull_up_points       = pts[Discipline.PULL_UP]       if self._is_allowed(Discipline.PULL_UP)       else None
-
-        # tiebreak +1 jeśli istnieje wpis PlayerCategoryTiebreak
+        # 2. Tiebreak flag (nie dodajemy do sumy miejsc – może posłużyć do przyszłych tie-breaków)
         tb_exists = self.category.tiebreaks_applied.filter(player=self.player).exists()
         self.tiebreak_points = 1.0 if tb_exists else 0.0
 
-        # suma
-        parts = [
-            self.snatch_points, self.tgu_points, self.squat_points,
-            self.see_saw_press_points, self.pistol_points, self.pull_up_points,
-        ]
-        valid = [x for x in parts if isinstance(x, (int, float))]
-        self.total_points = (sum(valid) + self.tiebreak_points) if valid else None
+        # 3. Suma miejsc (niższa lepsza) – jeśli brak miejsc => 0.0
+        placements = self._placements_map()
+        place_values = [p for p in placements.values() if isinstance(p, int) and p > 0]
+        self.total_points = float(sum(place_values)) if place_values else 0.0
 
         if save:
             self.save(update_fields=[
