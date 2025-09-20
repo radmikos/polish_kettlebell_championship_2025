@@ -13,3 +13,7 @@ class KbLiveConfig(AppConfig):
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "kb_live"
+
+    def ready(self):
+        # Import signals to ensure handlers are registered
+        from . import signals  # noqa: F401
