@@ -34,12 +34,12 @@ class SnatchResult(BaseBWPoints):
         verbose_name_plural = _("Wyniki Snatch")
 
     @property
-    def points(self) -> float | None:
+    def points(self) -> float:
         ctx = self._ctx
         if not ctx:
-            return None
+            return 0.0
         val = snatch_points(ctx, float(self.kettlebell_weight or 0.0), int(self.repetitions or 0))
-        return round(val, 3) if val is not None else None
+        return round(val, 3) if val is not None else 0.0
 
     def __str__(self) -> str:
         return f"{self.player} · Snatch={self.points if self.points is not None else 'N/A'}"

@@ -36,12 +36,12 @@ class SquatResult(BaseBWPoints):
         )
 
     @property
-    def points(self) -> float | None:
+    def points(self) -> float:
         ctx = self._ctx
         if not ctx:
-            return None
+            return 0.0
         val = squat_points(ctx, float(self.best_attempt or 0.0))
-        return round(val, 3) if val is not None else None
+        return round(val, 3) if val is not None else 0.0
 
     def __str__(self) -> str:
         return f"{self.player} · Squat={self.points if self.points is not None else 'N/A'}"
