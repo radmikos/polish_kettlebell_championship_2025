@@ -18,6 +18,7 @@ from .models import (
     TGUResult,
 )
 from .models.overall import CategoryOverallResult
+from .services.ranking import rank_category_overall
 
 
 # --- Clubs ---
@@ -184,38 +185,6 @@ class PullUpResultAdmin(_AttemptsResultAdmin):
 
 
 # Category placement admin
-@admin.register(CategoryPlacement)
-class CategoryPlacementAdmin(admin.ModelAdmin):
-    form = CategoryPlacementForm
-    list_display = ("category", "discipline", "player", "position", "base_points_display", "points_display")
-    search_fields = ("player__surname", "player__name", "category__name")
-    autocomplete_fields = ("player", "category")
-    list_select_related = ("player", "category")
-    ordering = ("category", "discipline", "position", "player__surname")
-    actions = ("recompute_positions",)
-
-    def base_points_display(self, obj):
-        return obj.base_points
-
-    base_points_display.short_description = "Punkty (bez TB)"
-
-    def points_display(self, obj):
-        return obj.points
-
-    points_display.short_description = "Punkty (z TB)"
-
-    @admin.action(description="Nadaj miejsca wg punktów (DESC) dla zaznaczonych wierszy")
-    def recompute_positions(self, request, queryset):
-        from itertools import groupby
-
-        rows = list(queryset.select_related("player", "category"))
-        rows.sort(key=lambda r: (r.category_id, r.discipline))
-        for _, group in groupby(rows, key=lambda r: (r.category_id, r.discipline)):
-            g = list(group)
-            g.sort(key=lambda r: (r.points or -1e18), reverse=True)
-            for i, r in enumerate(g, start=1):
-                r.position = i if r.points is not None else None
-            type(g[0]).objects.bulk_update(g, ["position"])
 
 
 # Overall category results
@@ -245,6 +214,7 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "pull_up_points",
         "tiebreak_points",
         "total_points",
+        "counted_disciplines",
     )
     actions = (
         "create_missing_overall",
@@ -306,7 +276,7 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
 
     def final_position_disp(self, obj):
         # Miejsce = punkty w klasyfikacji generalnej (im mniej tym lepiej)
-        return obj.final_position or "-"
+        return obj.final_position if obj.final_position is not None else "-"
 
     final_position_disp.short_description = "Miejsce końcowe"
     final_position_disp.admin_order_field = "final_position"
@@ -322,22 +292,14 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         from itertools import groupby
 
         rows = list(queryset.select_related("player", "category"))
+        if not rows:
+            return
+        category_ids = set()
         for r in rows:
             r.recompute(save=True)
-        rows.sort(key=lambda r: r.category_id)
-        for _, group in groupby(rows, key=lambda r: r.category_id):
-            g = list(group)
-            g.sort(
-                key=lambda r: (
-                    r.total_points is None,
-                    r.total_points,
-                    getattr(r.player, "surname", ""),
-                    getattr(r.player, "name", ""),
-                )
-            )
-            for i, r in enumerate(g, start=1):
-                r.final_position = i if r.total_points is not None else None
-            type(g[0]).objects.bulk_update(g, ["final_position"])
+            category_ids.add(r.category_id)
+        for cat_id in category_ids:
+            rank_category_overall(cat_id)
 
     # Category admin
     @admin.action(description="Utwórz brakujące rekordy Overall i przelicz")
@@ -369,6 +331,12 @@ class CategoryAdminForm(forms.ModelForm):
         required=False,
         label="Dyscypliny",
     )
+    max_counted_disciplines = forms.IntegerField(
+        required=False,
+        min_value=1,
+        label="Liczba punktowanych konkurencji",
+        help_text="Podaj ile najlepszych wyników ma liczyć się do sumy miejsc. Pozostaw puste aby liczyć wszystkie.",
+    )
 
     class Meta:
         model = Category
@@ -378,15 +346,35 @@ class CategoryAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
             self.fields["disciplines"].initial = self.instance.disciplines
+            self.fields["max_counted_disciplines"].initial = self.instance.max_counted_disciplines
 
     def clean_disciplines(self):
-        return self.cleaned_data["disciplines"]
+        return sorted(self.cleaned_data["disciplines"])
+
+    def clean_max_counted_disciplines(self):
+        value = self.cleaned_data.get("max_counted_disciplines")
+        if value is None:
+            return None
+        if value <= 0:
+            raise forms.ValidationError("Wartość musi być dodatnia.")
+        return value
+
+    def clean(self):
+        cleaned_data = super().clean()
+        limit = cleaned_data.get("max_counted_disciplines")
+        disciplines = cleaned_data.get("disciplines") or []
+        if limit is not None and disciplines and limit > len(disciplines):
+            self.add_error(
+                "max_counted_disciplines",
+                "Liczba punktowanych konkurencji nie może przekraczać liczby dyscyplin w kategorii.",
+            )
+        return cleaned_data
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     form = CategoryAdminForm
-    list_display = ("name", "get_disciplines_display")
+    list_display = ("name", "get_disciplines_display", "max_counted_disciplines_display")
     search_fields = ("name",)
     ordering = ("name",)
 
@@ -394,3 +382,8 @@ class CategoryAdmin(admin.ModelAdmin):
         return obj.get_disciplines_display()
 
     get_disciplines_display.short_description = "Dyscypliny"
+
+    def max_counted_disciplines_display(self, obj):
+        return obj.max_counted_disciplines or "-"
+
+    max_counted_disciplines_display.short_description = "Liczba punktowanych"

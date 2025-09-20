@@ -18,7 +18,8 @@ class CategoryOverallResult(models.Model):
        Jeśli konkurencja jest dozwolona w kategorii, ale brak wyniku – wpisywane jest 0.0 (żeby rekord był "widoczny").
        Jeśli konkurencja NIE jest dozwolona – pole = None.
     2. total_points = suma miejsc (position) z CategoryPlacement dla dozwolonych konkurencji.
-       Jeśli brak miejsc => total_points = None (rekord istnieje, ale nie bierze udziału w rankingu).
+       Jeśli kategoria ma limit punktowanych wyników – liczymy tylko najlepsze (najniższe) miejsca.
+       Jeśli brak miejsc => total_points = 0.0 (rekord istnieje, ale na końcu tabeli).
     3. final_position ustalana osobno (ranking rosnąco po total_points).
     4. Niższa wartość total_points jest lepsza.
     """
@@ -39,6 +40,11 @@ class CategoryOverallResult(models.Model):
 
     tiebreak_points = models.FloatField(_("Punkty Tiebreak"), default=0.0)
     total_points = models.FloatField(_("Suma Miejsc"), null=True, blank=True, db_index=True)
+    counted_disciplines = models.PositiveSmallIntegerField(
+        _("Liczba zaliczonych konkurencji"),
+        default=0,
+        help_text=_("Ile wyników wliczono do sumy miejsc w danym przeliczeniu."),
+    )
     final_position = models.PositiveIntegerField(_("Miejsce Końcowe"), null=True, blank=True, db_index=True)
 
     class Meta:
@@ -106,10 +112,17 @@ class CategoryOverallResult(models.Model):
         tb_exists = self.category.tiebreaks_applied.filter(player=self.player).exists()
         self.tiebreak_points = 1.0 if tb_exists else 0.0
 
-        # 3. Suma miejsc (niższa lepsza) – brak miejsc => None (rekord na końcu klasyfikacji)
+        # 3. Suma miejsc (niższa lepsza) – brak miejsc => 0.0 (rekord na końcu klasyfikacji)
         placements = self._placements_map()
         place_values = [p for p in placements.values() if isinstance(p, int) and p > 0]
-        self.total_points = float(sum(place_values)) if place_values else None
+        limit = getattr(self.category, "max_counted_disciplines", None) or 0
+        counted = sorted(place_values)[:limit] if limit > 0 else place_values
+        if counted:
+            self.counted_disciplines = len(counted)
+            self.total_points = float(sum(counted))
+        else:
+            self.counted_disciplines = 0
+            self.total_points = 0.0
 
         if save:
             self.save(
@@ -122,5 +135,6 @@ class CategoryOverallResult(models.Model):
                     "pull_up_points",
                     "tiebreak_points",
                     "total_points",
+                    "counted_disciplines",
                 ]
             )
