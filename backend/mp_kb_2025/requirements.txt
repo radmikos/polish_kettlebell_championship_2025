@@ -71,9 +71,13 @@ platformdirs==4.3.7
     #   virtualenv
 pre-commit==4.2.0
     # via -r requirements.txt
-psycopg2-binary==2.9.10
+psycopg2==2.9.10
     # via -r requirements.txt
-python-dotenv==1.1.0
+python-dateutil==2.9.0.post0
+    # via
+    #   -r requirements.txt
+    #   faker
+python-dotenv==1.0.1
     # via -r requirements.txt
 pytz==2025.2
     # via django-dbbackup
