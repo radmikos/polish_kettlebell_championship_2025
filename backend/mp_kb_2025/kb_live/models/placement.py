@@ -73,10 +73,10 @@ class CategoryPlacement(models.Model):
 
     # --- punkty z dogrywką (+1) ---
     @property
-    def points(self) -> float | None:
+    def points(self) -> float:
         pts = self.base_points
         if pts is None:
-            return None
+            return 0.0
         # +1 jeśli istnieje tiebreak dla (player, category)
         if self.category.tiebreaks_applied.filter(player=self.player).exists():
             return pts + 1.0
