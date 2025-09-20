@@ -1,6 +1,9 @@
-from django.core.management.base import BaseCommand
 from itertools import groupby
+
+from django.core.management.base import BaseCommand
+
 from kb_live.models import CategoryOverallResult
+from kb_live.services.ranking import rank_category_overall
 
 class Command(BaseCommand):
     help = "Nadaje miejsca w overall na podstawie sumy miejsc (ASC – mniej lepsze)."
@@ -26,12 +29,9 @@ class Command(BaseCommand):
             groups = [(k, list(g)) for k, g in groupby(rows, key=lambda r: r.category_id)]
 
         total_updated = 0
-        for _, group in groups:
-            # Ascending: None last
-            group.sort(key=lambda r: (r.total_points is None, r.total_points, getattr(r.player, 'surname', ''), getattr(r.player, 'name', '')))
-            for i, r in enumerate(group, start=1):
-                r.final_position = i if r.total_points is not None else None
-            CategoryOverallResult.objects.bulk_update(group, ["final_position"])
-            total_updated += len(group)
+        for cat_id, group in groups:
+            for row in group:
+                row.recompute(save=True)
+            total_updated += rank_category_overall(cat_id)
 
-        self.stdout.write(self.style.SUCCESS(f"Nadano miejsca (overall) dla {total_updated} rekordów."))
+        self.stdout.write(self.style.SUCCESS(f"Przeliczono i nadano miejsca (overall) dla {total_updated} rekordów."))

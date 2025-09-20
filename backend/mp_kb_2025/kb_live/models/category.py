@@ -9,6 +9,12 @@ class Category(models.Model):
 
     name = models.CharField(_("Nazwa Kategorii"), max_length=100, unique=True)
     disciplines = models.JSONField(_("Dyscypliny"), default=list)
+    max_counted_disciplines = models.PositiveSmallIntegerField(
+        _("Liczba punktowanych konkurencji"),
+        null=True,
+        blank=True,
+        help_text=_("Ile najlepszych wyników (najniższe miejsca) wliczać do sumy. Pozostaw puste aby liczyć wszystkie."),
+    )
 
     class Meta:
         verbose_name = _("Kategoria")
