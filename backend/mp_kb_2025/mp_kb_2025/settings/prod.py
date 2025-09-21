@@ -32,7 +32,7 @@ DATABASES = {
     }
 }
 
-FORCE_SCRIPT_NAME = '/app'
+FORCE_SCRIPT_NAME = ''
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
