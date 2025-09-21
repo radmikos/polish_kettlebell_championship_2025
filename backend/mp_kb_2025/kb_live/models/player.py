@@ -7,8 +7,8 @@ class Player(models.Model):
     """Represents a competitor."""
 
     class Gender(models.TextChoices):
-        FEMALE = "female", _("Kobieta")
-        MALE = "male", _("Mężczyzna")
+        FEMALE = "Kobieta", _("Kobieta")
+        MALE = "Mężczyzna", _("Mężczyzna")
 
     name = models.CharField(_("Imię"), max_length=50)
     surname = models.CharField(_("Nazwisko"), max_length=50)
@@ -21,11 +21,14 @@ class Player(models.Model):
     )
     gender = models.CharField(
         _("Płeć"),
-        max_length=6,
+        max_length=12,
         choices=Gender.choices,
         null=True,
         blank=True,
     )
+    @property
+    def gender_display(self) -> str:
+        return self.get_gender_display() if self.gender else ""
 
     club = models.ForeignKey(
         "kb_live.SportClub",
