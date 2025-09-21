@@ -32,6 +32,10 @@ DATABASES = {
     }
 }
 
+FORCE_SCRIPT_NAME = '/app'
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
 # Security settings for production
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
