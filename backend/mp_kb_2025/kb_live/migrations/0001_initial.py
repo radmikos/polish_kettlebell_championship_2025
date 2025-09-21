@@ -169,3 +169,4 @@ class Migration(migrations.Migration):
             index=models.Index(fields=['gender'], name='kb_live_pla_gender_98360e_idx'),
         ),
     ]
+
