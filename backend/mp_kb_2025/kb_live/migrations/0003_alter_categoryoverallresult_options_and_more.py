@@ -118,3 +118,4 @@ class Migration(migrations.Migration):
             field=models.FloatField(blank=True, db_index=True, null=True, verbose_name="Suma Miejsc"),
         ),
     ]
+
