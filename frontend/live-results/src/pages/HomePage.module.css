@@ -1,0 +1,142 @@
+.homePage {
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.intro {
+  font-size: 1.1em;
+  color: var(--text-color);
+  opacity: 0.9;
+  margin-bottom: 1rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.categorySection {
+  background-color: transparent;
+  border-radius: 4px;
+  padding: 0;
+}
+
+.sectionTitle {
+  font-family: var(--font-header);
+  font-weight: 400;
+  color: var(--primary-color) !important;
+  letter-spacing: 1.1px;
+  margin-top: 2.5rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid var(--primary-color);
+  font-size: 2.2em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.categoryLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.categoryCard {
+  background-color: var(--navy-blue-dark) !important;
+  border: 1px solid var(--navy-blue-border) !important;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out,
+    border-color 0.2s ease-in-out !important;
+  border-radius: 4px !important;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: var(--background-card-color);
+  min-height: 160px;
+}
+
+.categoryCard:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 20px #666666;
+  border-color: var(--navy-blue-hover-border);
+  background-color: var(--backgroud-card-hover);
+}
+
+.categoryName {
+  font-family: var(--font-military) !important;
+  font-size: 1.3em !important;
+  font-weight: 700 !important;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--background-card-color) !important;
+}
+
+.secondaryName {
+  font-family: var(--font-military);
+  font-size: 1.1em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  color: var(--test);
+}
+
+.meta {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+
+.disciplines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+}
+
+.disciplineTag {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(0, 53, 102, 0.3);
+  color: var(--primary-color);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.loadingWrapper,
+.errorWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 240px;
+}
+
+.errorText {
+  max-width: 420px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.errorAlert {
+  margin-bottom: 1rem;
+}

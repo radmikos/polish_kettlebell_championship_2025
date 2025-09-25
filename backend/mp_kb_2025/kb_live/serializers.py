@@ -56,8 +56,8 @@ class CategoryNestedSerializer(serializers.ModelSerializer):
 
 
 class PlayerSummarySerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(source="full_name", read_only=True)
-    gender_display = serializers.CharField(source="gender_display", read_only=True)
+    full_name = serializers.CharField(read_only=True)
+    gender_display = serializers.CharField(read_only=True)
     club = SportClubSerializer(read_only=True)
     categories = CategoryNestedSerializer(many=True, read_only=True)
 

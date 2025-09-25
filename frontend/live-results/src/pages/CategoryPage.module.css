@@ -1,0 +1,115 @@
+.page {
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.metaCard {
+  background: transparent;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.metaTitle {
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff !important;
+  font-family: var(--font-header) !important;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.disciplines {
+  font-style: italic;
+  color: var(--text-color);
+  opacity: 0.8;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.disciplineChip {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(0, 53, 102, 0.35);
+  color: var(--primary-color);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.tableCard {
+  background: transparent;
+  border: 1px solid var(--navy-blue-border);
+  border-radius: 6px;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.tableTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+.placementsCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.expandWrapper {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+}
+
+.expandDiscipline {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.expandHeader {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  font-family: var(--font-military);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.expandMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+
+@media (min-width: 768px) {
+  .toolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

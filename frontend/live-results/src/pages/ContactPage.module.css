@@ -1,0 +1,52 @@
+.contactPage {
+  display: grid;
+  gap: 1.5rem;
+  color: var(--text-inverse);
+}
+
+.card {
+  background: rgba(245, 243, 244, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--card-shadow);
+}
+
+.cardTitle {
+  font-family: "Oswald", sans-serif !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.contactGrid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.contactItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.value {
+  font-size: 1.05rem;
+}
+
+.tagline {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@media (min-width: 768px) {
+  .contactGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
