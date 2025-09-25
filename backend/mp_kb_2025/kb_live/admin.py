@@ -17,6 +17,8 @@ from .models import (
     SquatResult,
     TGUResult,
 )
+from import_export.admin import ImportExportModelAdmin
+from .resources import PlayerImportResource, PlayerExportResource
 from .models.overall import CategoryOverallResult
 from .services.ranking import rank_category_overall
 
@@ -33,11 +35,14 @@ class SportClubAdmin(admin.ModelAdmin):
     player_count.short_description = "Number of Players"
 
 
+
 # --- Players ---
 @admin.register(Player)
-class PlayerAdmin(admin.ModelAdmin):
+class PlayerAdmin(ImportExportModelAdmin):
+    resource_classes = [PlayerImportResource]
+    export_resource_classes = [PlayerExportResource]
     list_display = ("surname", "name", "weight", "gender", "club", "categories_list")
-    search_fields = ("surname", "name", "club__name")
+    search_fields = ("surname", "name", "club__name", "categories__name")
     autocomplete_fields = ("club",)
     filter_horizontal = ("categories",)
 
