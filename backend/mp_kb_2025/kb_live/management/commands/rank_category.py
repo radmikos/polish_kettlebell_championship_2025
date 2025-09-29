@@ -53,7 +53,7 @@ class Command(BaseCommand):
                     overall.recompute(save=True)
 
             # Po zmianach miejsc w tej konkurencji warto przeliczyć wyniki overall
-            rank_category_overall(category.pk)
+            rank_category_overall(category.pk, recompute_disciplines=False)
 
         self.stdout.write(
             self.style.SUCCESS(f"Nadano miejsca: kategoria='{category.name}', konkurencja='{disc}', n={len(rows)}")

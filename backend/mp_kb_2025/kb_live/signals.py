@@ -100,7 +100,7 @@ def _schedule_overall_refresh(category_id: int, player_ids: Iterable[int] | None
             players = Player.objects.filter(pk__in=players_to_refresh)
             for player in players:
                 ensure_overall_for_player_categories(player, [category_id])
-        rank_category_overall(category_id)
+        rank_category_overall(category_id, recompute_disciplines=False)
 
     transaction.on_commit(_run)
 
@@ -114,9 +114,13 @@ def _schedule_overall_refresh(category_id: int, player_ids: Iterable[int] | None
 @receiver(post_save, sender=PistolResult)
 @receiver(post_save, sender=PullUpResult)
 def discipline_result_saved(sender, instance, **kwargs):
+    if kwargs.get("raw"):
+        return
+
     player = instance.player
-    # Upewnij się, że overall jest przeliczony dla wszystkich kategorii zawodnika
-    ensure_overall_for_player_categories(player)
+    category_ids = list(player.categories.values_list("id", flat=True))
+    for cat_id in category_ids:
+        _schedule_overall_refresh(cat_id, [player.pk])
 
 
 @receiver(m2m_changed, sender=Player.categories.through)
