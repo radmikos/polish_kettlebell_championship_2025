@@ -141,10 +141,6 @@ const fetchCategory = async (categoryId: string | undefined): Promise<CategoryQu
     const rightPlacement = b.placement_points ?? Number.MAX_SAFE_INTEGER;
     if (leftPlacement !== rightPlacement) return leftPlacement - rightPlacement;
 
-    const leftPoints = a.total_points ?? 0;
-    const rightPoints = b.total_points ?? 0;
-    if (leftPoints !== rightPoints) return rightPoints - leftPoints;
-
     return (a.player?.full_name ?? '').localeCompare(b.player?.full_name ?? '');
   });
 
@@ -157,7 +153,6 @@ const fetchCategory = async (categoryId: string | undefined): Promise<CategoryQu
 const useOverallColumns = (
   info: CategorySummary | undefined,
   labelMap: Map<string, string>,
-  showTiebreak: boolean,
 ): ColumnsType<ProcessedCategoryRow> => {
   const baseColumns: ColumnsType<ProcessedCategoryRow> = [
     {
@@ -197,84 +192,46 @@ const useOverallColumns = (
       sorter: (a, b) => (a.player?.weight ?? 0) - (b.player?.weight ?? 0),
     },
     {
-      title: "Suma punktów z miejsc",
-      dataIndex: "placement_points",
-      key: "placement-points",
-      align: "right",
-      width: 180,
-      render: (value: number | null | undefined) => formatNumber(value, 1),
-      sorter: (a, b) =>
-        (a.placement_points ?? Number.MAX_SAFE_INTEGER) -
-        (b.placement_points ?? Number.MAX_SAFE_INTEGER),
-    },
-    {
-      title: "Suma punktów",
-      dataIndex: "total_points",
-      key: "total",
-      align: "right",
-      width: 160,
-      render: (value: number | null | undefined) => formatNumber(value, 2),
-      sorter: (a, b) => (b.total_points ?? 0) - (a.total_points ?? 0),
+      title: "Tie-break",
+      dataIndex: "tiebreak_points",
+      key: "tiebreak",
+      align: "center",
+      width: 120,
+      render: (value: number | null | undefined) => formatInteger(value),
+      sorter: (a, b) => (a.tiebreak_points ?? 0) - (b.tiebreak_points ?? 0),
     },
   ];
 
-  const disciplineColumns: ColumnsType<ProcessedCategoryRow> = (info?.disciplines ?? []).flatMap((code) => {
+  const disciplineColumns: ColumnsType<ProcessedCategoryRow> = (info?.disciplines ?? []).map((code) => {
     const label = labelMap.get(code) ?? code;
 
-    const placeColumn: ColumnsType<ProcessedCategoryRow>[number] = {
+    return {
       title: `Miejsce · ${label}`,
       key: `overall-place-${code}`,
       dataIndex: ["discipline_places", code],
       align: "center",
       width: 120,
-      render: (_value: number | null | undefined, record) => {
-        const place = record.discipline_places?.[code];
-        return place ?? "-";
-      },
+      render: (_value: number | null | undefined, record) =>
+        formatInteger(record.discipline_places?.[code]),
       sorter: (a, b) =>
         (a.discipline_places?.[code] ?? Number.MAX_SAFE_INTEGER) -
         (b.discipline_places?.[code] ?? Number.MAX_SAFE_INTEGER),
     };
-
-    const pointsColumn: ColumnsType<ProcessedCategoryRow>[number] = {
-      title: `Punkty GC · ${label}`,
-      key: `overall-points-${code}`,
-      dataIndex: ["discipline_place_points", code],
-      align: "right",
-      width: 140,
-      render: (_value: number | null | undefined, record) => {
-        const gcPoints = record.discipline_place_points?.[code];
-        return gcPoints === null || gcPoints === undefined ? "-" : formatInteger(gcPoints);
-      },
-      sorter: (a, b) =>
-        (a.discipline_place_points?.[code] ?? Number.MAX_SAFE_INTEGER) -
-        (b.discipline_place_points?.[code] ?? Number.MAX_SAFE_INTEGER),
-    };
-
-    return [placeColumn, pointsColumn];
   });
 
-  const columns = [...baseColumns, ...disciplineColumns];
+  const sumColumn: ColumnsType<ProcessedCategoryRow>[number] = {
+    title: "Suma punktów",
+    dataIndex: "total_points",
+    key: "total-points",
+    align: "right",
+    width: 160,
+    render: (value: number | null | undefined) => formatInteger(value),
+    sorter: (a, b) =>
+      (a.total_points ?? Number.MAX_SAFE_INTEGER) -
+      (b.total_points ?? Number.MAX_SAFE_INTEGER),
+  };
 
-  if (showTiebreak) {
-    columns.push({
-      title: "Tie-break",
-      key: "tiebreak",
-      align: "center",
-      width: 130,
-      render: (_value, record) => {
-        if (record.tiebreak_applied) {
-          return <Tag color="var(--color-warning)">+1 pkt</Tag>;
-        }
-        if (record.tiebreak_points) {
-          return formatNumber(record.tiebreak_points, 2);
-        }
-        return "-";
-      },
-    });
-  }
-
-  return columns;
+  return [...baseColumns, ...disciplineColumns, sumColumn];
 };
 
 const createDisciplineColumns = (code: string): ColumnsType<DisciplineRow> => {
@@ -403,6 +360,7 @@ const renderAttemptsDetails = (
     <div key={key} className={styles.expandDiscipline}>
       <div className={styles.expandHeader}>{label}</div>
       <div className={styles.expandMeta}>
+        <span>Miejsce: {formatInteger(result.place)}</span>
         <span>Próba 1: {formatNumber(result.attempt_1, 1)}</span>
         <span>Próba 2: {formatNumber(result.attempt_2, 1)}</span>
         <span>Próba 3: {formatNumber(result.attempt_3, 1)}</span>
@@ -431,6 +389,7 @@ const renderSnatchDetails = (
     <div key={key} className={styles.expandDiscipline}>
       <div className={styles.expandHeader}>{label}</div>
       <div className={styles.expandMeta}>
+        <span>Miejsce: {formatInteger(result.place)}</span>
         <span>Waga kettla: {formatNumber(result.kettlebell_weight, 1)} kg</span>
         <span>Powtórzenia: {formatInteger(result.repetitions)}</span>
         <span>Punkty: {formatNumber(result.points, 2)}</span>
@@ -479,15 +438,7 @@ const CategoryPage = () => {
     });
   }, [processedResults, searchValue]);
 
-  const showTiebreakColumn = useMemo(
-    () =>
-      processedResults.some(
-        (row) => row.tiebreak_applied || Boolean(row.tiebreak_points),
-      ),
-    [processedResults],
-  );
-
-  const overallColumns = useOverallColumns(data?.info, labelMap, showTiebreakColumn);
+  const overallColumns = useOverallColumns(data?.info, labelMap);
 
   const disciplineTables = useMemo(() => {
     const entries = (data?.info?.disciplines ?? []).map((code) => {

@@ -136,6 +136,7 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
         "player",
         "repetitions",
         "kettlebell_weight",
+        "place",
         "best_attempt_display",
         "percent_bw_display",
         "points_display",
@@ -143,7 +144,13 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
     )
     search_fields = ("player__surname", "player__name", "player__club__name")
     list_select_related = ("player",)
-    readonly_fields = ("points_display", "best_attempt_display", "percent_bw_display", "categories_display")
+    readonly_fields = (
+        "place",
+        "points_display",
+        "best_attempt_display",
+        "percent_bw_display",
+        "categories_display",
+    )
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -171,13 +178,25 @@ class _AttemptsResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixi
     attempts_fields = ("attempt_1", "attempt_2", "attempt_3")
     search_fields = ("player__surname", "player__name", "player__club__name")
     list_select_related = ("player",)
-    readonly_fields = ("points_display", "best_attempt_display", "percent_bw_display", "categories_display")
+    readonly_fields = (
+        "place",
+        "points_display",
+        "best_attempt_display",
+        "percent_bw_display",
+        "categories_display",
+    )
 
     def get_list_display(self, request):
         return (
             ("player",)
             + self.attempts_fields
-            + ("best_attempt_display", "percent_bw_display", "points_display", "categories_display")
+            + (
+                "place",
+                "best_attempt_display",
+                "percent_bw_display",
+                "points_display",
+                "categories_display",
+            )
         )
 
     def get_queryset(self, request):

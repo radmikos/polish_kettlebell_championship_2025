@@ -13,8 +13,8 @@
 /* Sekcja: Tło strony */
 body {
   font-family: var(--font-ui);
-  background: var(--color-bg-page);
-  color: var(--color-text-primary);
+  background: var(--color-text-secondary);
+  color: var(--color-text-secondary);
   min-height: 100vh;
   display: flex;
   flex-direction: column;

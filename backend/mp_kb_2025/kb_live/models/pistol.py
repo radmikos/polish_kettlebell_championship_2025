@@ -18,6 +18,7 @@ class PistolResult(BaseBWPoints):
     attempt_1 = models.FloatField(_("Próba 1"), default=0.0, blank=True, null=True)
     attempt_2 = models.FloatField(_("Próba 2"), default=0.0, blank=True, null=True)
     attempt_3 = models.FloatField(_("Próba 3"), default=0.0, blank=True, null=True)
+    place = models.PositiveIntegerField(_("Miejsce"), null=True, blank=True)
 
     class Meta:
         verbose_name = _("Wynik Pistol Squat")

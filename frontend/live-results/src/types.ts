@@ -21,7 +21,6 @@ export interface PlayerCategoryResult {
   final_position: number | null;
   total_points: number | null;
   discipline_places: DisciplinePlaces;
-  discipline_place_points: DisciplinePoints;
   placement_points: number | null;
   counted_disciplines: number | null;
   tiebreak_points: number | null;
@@ -54,6 +53,7 @@ export interface SnatchResult {
   kettlebell_weight: number | null;
   repetitions: number | null;
   points: number | null;
+  place: number | null;
 }
 
 export interface AttemptsResult {
@@ -62,6 +62,7 @@ export interface AttemptsResult {
   attempt_3: number | null;
   best_attempt: number | null;
   points: number | null;
+  place: number | null;
 }
 
 export interface DisciplinePoints {
@@ -97,7 +98,6 @@ export interface CategoryOverallRow {
   final_position: number | null;
   total_points: number | null;
   discipline_places: DisciplinePlaces;
-  discipline_place_points: DisciplinePoints;
   placement_points: number | null;
   counted_disciplines: number | null;
   tiebreak_points: number | null;

@@ -141,13 +141,6 @@ class CategoryOverallResult(models.Model):
 
         limit = getattr(self.category, "max_counted_disciplines", None) or 0
 
-        if aggregated_points:
-            points_sorted = sorted(aggregated_points, reverse=True)
-            counted_points = points_sorted[:limit] if limit > 0 else points_sorted
-            self.total_points = float(sum(counted_points))
-        else:
-            self.total_points = 0.0
-
         placements = self._placements_map()
 
         place_fields = [
@@ -177,6 +170,13 @@ class CategoryOverallResult(models.Model):
         else:
             self.counted_disciplines = 0
             self.placement_points = None
+
+        if self.placement_points is not None:
+            self.total_points = self.placement_points + (self.tiebreak_points or 0.0)
+        elif self.tiebreak_points:
+            self.total_points = float(self.tiebreak_points)
+        else:
+            self.total_points = None
 
         if save:
             self.save(
