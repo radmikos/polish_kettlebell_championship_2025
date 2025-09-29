@@ -11,8 +11,8 @@
 .App-header {
   background: linear-gradient(
     170deg,
-    rgba(20, 32, 54, 0.92) 0%,
-    rgba(9, 15, 28, 0.92) 100%
+    rgba(var(--color-surface-830-rgb), 0.92) 0%,
+    rgba(var(--color-surface-870-rgb), 0.92) 100%
   );
   color: var(--color-text-primary);
   min-height: 420px;
@@ -33,7 +33,7 @@
 .App-logo {
   height: 160px;
   pointer-events: none;
-  filter: drop-shadow(0 18px 32px rgba(5, 11, 22, 0.6));
+  filter: drop-shadow(0 18px 32px rgba(var(--color-surface-950-rgb), 0.6));
 }
 
 @media (prefers-reduced-motion: no-preference) {

@@ -16,7 +16,7 @@
   justify-content: space-between;
   height: var(--header-height);
   padding: 0 clamp(1rem, 4vw, 1.75rem);
-  background: rgba(16, 26, 50, 0.85);
+  background: rgba(var(--color-surface-880-rgb), 0.85);
   border-bottom: 1px solid var(--color-border);
   backdrop-filter: var(--blur-soft);
   position: sticky;
@@ -134,8 +134,8 @@
   margin: 1.5rem 0;
   background: linear-gradient(
     165deg,
-    rgba(21, 34, 58, 0.92) 0%,
-    rgba(10, 17, 31, 0.92) 100%
+    rgba(var(--color-surface-840-rgb), 0.92) 0%,
+    rgba(var(--color-surface-870-rgb), 0.92) 100%
   );
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-soft);
@@ -254,7 +254,7 @@
   }
 
   .mobileDrawer :global(.ant-drawer-content) {
-    background: rgba(13, 22, 40, 0.95);
+    background: rgba(var(--color-surface-overlay-rgb), 0.95);
     border-radius: 18px 0 0 18px;
     box-shadow: var(--shadow-soft);
   }

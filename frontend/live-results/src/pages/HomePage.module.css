@@ -58,8 +58,8 @@
 .categoryCard {
   background: linear-gradient(
     175deg,
-    rgba(20, 32, 54, 0.92) 0%,
-    rgba(9, 15, 28, 0.92) 100%
+    rgba(var(--color-surface-830-rgb), 0.92) 0%,
+    rgba(var(--color-surface-870-rgb), 0.92) 100%
   );
   border: 1px solid var(--color-border-strong);
   transition: transform var(--transition-base),
@@ -82,8 +82,8 @@
   border-color: var(--color-primary);
   background: linear-gradient(
     175deg,
-    rgba(30, 44, 70, 0.95) 0%,
-    rgba(14, 22, 38, 0.95) 100%
+    rgba(var(--color-surface-720-rgb), 0.95) 0%,
+    rgba(var(--color-surface-860-rgb), 0.95) 100%
   );
 }
 
@@ -111,7 +111,7 @@
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(248, 250, 252, 0.65);
+  color: rgba(var(--color-text-primary-rgb), 0.65);
   text-align: center;
 }
 
@@ -125,11 +125,11 @@
 .disciplineTag {
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
-  background: rgba(255, 107, 53, 0.12);
+  background: rgba(var(--color-primary-rgb), 0.12);
   color: var(--color-primary);
   font-size: 0.78rem;
   letter-spacing: 0.05em;
-  border: 1px solid rgba(255, 107, 53, 0.35);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.35);
 }
 
 /* Sekcja: Stany dodatkowe */
@@ -148,7 +148,7 @@
 .emptyState {
   text-align: center;
   padding: 2rem 0;
-  color: rgba(248, 250, 252, 0.7);
+  color: rgba(var(--color-text-primary-rgb), 0.7);
 }
 
 .errorAlert {

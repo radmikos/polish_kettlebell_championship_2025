@@ -1,0 +1,116 @@
+/* Design system tokens: kolory, cienie, promienie i fonty */
+:root {
+  /* Bazowe powierzchnie */
+  --color-surface-950: #050b16;
+  --color-surface-940: #070b16;
+  --color-surface-900: #0f172a;
+  --color-surface-870: #0a111f;
+  --color-surface-880: #101a32;
+  --color-surface-860: #0e1626;
+  --color-surface-855: #0a1326;
+  --color-surface-840: #15223a;
+  --color-surface-830: #142036;
+  --color-surface-820: #162239;
+  --color-surface-780: #1f2937;
+  --color-surface-760: #1e2c46;
+  --color-surface-720: #1e2c46;
+  --color-surface-overlay: #0d1628;
+
+  /* Kolory semantyczne */
+  --color-primary: #ff6b35;
+  --color-primary-hover: #f25c1a;
+  --color-link: #38bdf8;
+  --color-link-hover: #0ea5e9;
+  --color-success: #4ade80;
+  --color-warning: #facc15;
+  --color-error: #ef4444;
+  --color-error-soft: #f87171;
+
+  /* Neutralne */
+  --color-border-primary: #1e293b;
+  --color-border-strong: #27344d;
+  --color-border-muted: #4b5563;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-base: #d1d5db;
+  --color-text-contrast: #050b16;
+  --color-neutral-050: #f5f3f4;
+  --color-neutral-700: #374151;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Kolory narzędziowe (kalkulator) */
+  --color-calc-background: #111827;
+  --color-calc-card: rgba(31, 41, 55, 0.8);
+
+  /* Kanały RGB do pracy z przezroczystością */
+  --color-surface-950-rgb: 5, 11, 22;
+  --color-surface-940-rgb: 7, 11, 22;
+  --color-surface-900-rgb: 15, 23, 42;
+  --color-surface-870-rgb: 10, 17, 31;
+  --color-surface-880-rgb: 16, 26, 50;
+  --color-surface-860-rgb: 14, 22, 38;
+  --color-surface-855-rgb: 10, 19, 38;
+  --color-surface-840-rgb: 21, 34, 58;
+  --color-surface-830-rgb: 20, 32, 54;
+  --color-surface-820-rgb: 22, 34, 57;
+  --color-surface-780-rgb: 31, 41, 55;
+  --color-surface-overlay-rgb: 13, 22, 40;
+  --color-border-primary-rgb: 30, 41, 59;
+  --color-border-muted-rgb: 75, 85, 99;
+  --color-text-primary-rgb: 248, 250, 252;
+  --color-text-base-rgb: 209, 213, 219;
+  --color-neutral-050-rgb: 245, 243, 244;
+  --color-neutral-700-rgb: 55, 65, 81;
+  --color-white-rgb: 255, 255, 255;
+  --color-black-rgb: 0, 0, 0;
+  --color-primary-rgb: 255, 107, 53;
+  --color-primary-hover-rgb: 242, 92, 26;
+  --color-link-rgb: 56, 189, 248;
+  --color-link-hover-rgb: 14, 165, 233;
+  --color-success-rgb: 74, 222, 128;
+  --color-warning-rgb: 250, 204, 21;
+  --color-error-rgb: 239, 68, 68;
+  --color-error-soft-rgb: 248, 113, 113;
+
+  /* Promienie, przejścia, blur */
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --transition-base: 0.25s ease;
+  --blur-soft: blur(6px);
+
+  /* Fonty */
+  --font-heading: "Bebas Neue", sans-serif;
+  --font-body: "Oswald", sans-serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
+  --font-family-default: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+
+  /* Cienie i efekty */
+  --color-shadow-soft-rgb: 4, 9, 20;
+  --color-shadow-hard-rgb: 5, 12, 27;
+  --shadow-soft: 0 22px 48px rgba(var(--color-shadow-soft-rgb), 0.55);
+  --shadow-hard: 0 12px 24px rgba(var(--color-shadow-hard-rgb), 0.45);
+  --shadow-calc-card: 0 10px 30px rgba(var(--color-black-rgb), 0.5);
+  --card-shadow: var(--shadow-soft);
+
+  /* Wysokości i szerokości layoutu */
+  --layout-max-width: 1600px;
+  --header-height: 64px;
+
+  /* Alias dla dotychczasowych nazw (zgodność wsteczna) */
+  --color-bg-page: var(--color-surface-950);
+  --color-bg-panel: var(--color-surface-900);
+  --color-bg-panel-soft: var(--color-surface-820);
+  --color-bg-panel-strong: var(--color-surface-880);
+  --color-border: var(--color-border-primary);
+  --color-text: var(--color-text-base);
+  --color-background: var(--color-calc-background);
+  --color-card: var(--color-calc-card);
+  --color-text-label: var(--color-text-secondary);
+  --color-text-inverse: var(--color-text-contrast);
+  --font-text: var(--font-body);
+  --font-family: var(--font-family-default);
+}
