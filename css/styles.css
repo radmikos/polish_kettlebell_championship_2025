@@ -1,75 +1,112 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600&display=swap");
+
+/* Sekcja: Kolory i fonty */
 :root {
-  --color-background: #000003;
-  --color-card: 303333 (31, 41, 55, 0.8);
-  --color-border: #000003;
-  --color-text: #d1d5db;
-  --color-text-label: #9ca3af;
-  --color-primary: #f97316;
-  --color-primary-hover: #ea580c;
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
+  --color-bg-page: #050b16;
+  --color-bg-panel: #0f172a;
+  --color-bg-panel-soft: #162239;
+  --color-border: #1e293b;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-primary: #ff6b35;
+  --color-primary-hover: #f25c1a;
+  --color-link: #38bdf8;
+  --color-link-hover: #0ea5e9;
+  --shadow-soft: 0 20px 45px rgba(4, 9, 20, 0.6);
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --transition-base: 0.25s ease;
+  --font-heading: "Bebas Neue", sans-serif;
+  --font-text: "Oswald", sans-serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
+  color-scheme: dark;
 }
 
-* {
+/* Sekcja: Reset bazowy */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* Sekcja: Tło strony */
 body {
-  font-family: var(--font-family);
-  background-color: var(--color-background);
-  color: var(--color-text);
+  font-family: var(--font-ui);
+  background: radial-gradient(
+        circle at 0% 0%,
+        rgba(255, 107, 53, 0.14),
+        transparent 55%
+      )
+      fixed,
+    linear-gradient(140deg, var(--color-bg-panel) 0%, var(--color-bg-page) 100%)
+      fixed;
+  color: var(--color-text-primary);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 1.5rem;
+  gap: 1.5rem;
 }
 
+/* Sekcja: Główny kontener */
 .main-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  max-width: 800px;
+  width: min(100%, 860px);
+  gap: 1.5rem;
 }
 
+/* Sekcja: Oprawa graficzna */
 .image-container {
   text-align: center;
-  background-color: transparent;
 }
 
 .image-container img {
   max-width: 100%;
   height: auto;
+  filter: drop-shadow(0 12px 35px rgba(5, 11, 22, 0.55));
 }
 
+/* Sekcja: Karta informacji */
 .info-container {
   width: 100%;
-  padding: 1.5rem;
+  padding: 2rem;
   text-align: center;
-  background-color: var(--color-card);
+  background: linear-gradient(
+    160deg,
+    var(--color-bg-panel-soft) 0%,
+    var(--color-bg-panel) 100%
+  );
   border: 1px solid var(--color-border);
-  border-radius: 10px;
-  margin-top: 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
 }
 
 .info-container h1 {
-  font-size: 2rem;
-  font-weight: bold;
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 5vw, 3.1rem);
+  font-weight: 600;
+  letter-spacing: 1.4px;
   color: var(--color-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .info-container p {
-  font-size: 1rem;
-  color: var(--color-text-label);
-  margin-bottom: 1.5rem;
+  font-family: var(--font-text);
+  font-size: 1.05rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.75rem;
 }
 
+/* Sekcja: Media społecznościowe */
 .icons-social {
   display: flex;
   justify-content: center;
@@ -77,55 +114,88 @@ body {
 }
 
 .icons-social a {
-  color: var(--color-text);
-  transition: color 0.2s;
+  color: var(--color-text-primary);
   font-size: 2.5rem;
+  transition: color var(--transition-base), transform var(--transition-base);
 }
 
 .icons-social a:hover {
-  color: var(--color-primary);
+  color: var(--color-link);
+  transform: translateY(-4px);
 }
 
-/* --- Stopka --- */
+/* Sekcja: Stopka */
 footer {
-  font-size: 0.8rem;
-  color: var(--color-text-label);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
   text-align: center;
-  margin-top: 1rem;
 }
 
 footer a {
-  color: var(--color-primary);
+  color: var(--color-link);
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 600;
+  transition: color var(--transition-base);
 }
 
 footer a:hover {
-  text-decoration: underline;
+  color: var(--color-link-hover);
 }
 
+/* Sekcja: Widok mobilny */
 @media (max-width: 600px) {
+  body {
+    padding:
+      calc(env(safe-area-inset-top, 0px) + 1rem)
+      clamp(0.9rem, 5vw, 1.2rem)
+      calc(env(safe-area-inset-bottom, 0px) + 1.25rem);
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 1.25rem;
+  }
+
   .info-container {
-    padding: 1rem;
+    padding: clamp(1.3rem, 5vw, 1.6rem);
   }
 
   .info-container h1 {
-    font-size: 1.5rem;
+    font-size: clamp(1.8rem, 8vw, 2.2rem);
   }
 
   .info-container p {
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-
-  .icons-social a {
-    font-size: 2rem;
+    font-size: 0.95rem;
+    margin-bottom: 1.15rem;
   }
 
   .icons-social {
     gap: 1rem;
   }
+
+  .icons-social a {
+    font-size: 2.2rem;
+  }
+
   .main-container {
-    padding: 0 0.5rem;
+    width: 100%;
+    gap: 1.3rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .info-container {
+    padding: 1.15rem;
+  }
+
+  .info-container h1 {
+    letter-spacing: 1.1px;
+  }
+
+  .info-container p {
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  .icons-social a {
+    font-size: 2rem;
   }
 }

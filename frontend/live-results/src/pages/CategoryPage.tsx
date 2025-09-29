@@ -12,6 +12,7 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { ArrowLeftOutlined, ReloadOutlined } from "@ant-design/icons";
+import useBreakpoint from "antd/es/grid/hooks/useBreakpoint";
 import apiClient from "../services/api";
 import {
   CategorySummary,
@@ -248,6 +249,8 @@ const CategoryPage = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
 
   const {
     data,
@@ -362,7 +365,7 @@ const CategoryPage = () => {
             placeholder="Filtruj zawodników lub klub"
             value={searchValue}
             onChange={(event) => setSearchValue(event.target.value)}
-            style={{ maxWidth: 320 }}
+            style={{ maxWidth: isMobile ? "100%" : 320 }}
           />
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             Odśwież
@@ -395,12 +398,18 @@ const CategoryPage = () => {
           columns={columns}
           dataSource={filteredResults}
           rowKey={(record) => record.id}
-          pagination={{ pageSize: 25, showSizeChanger: true }}
+          pagination={
+            isMobile
+              ? { pageSize: 15, showSizeChanger: false }
+              : { pageSize: 25, showSizeChanger: true }
+          }
           expandable={{
             expandRowByClick: true,
             expandedRowRender,
           }}
-          scroll={{ x: 900 }}
+          size={isMobile ? "small" : "middle"}
+          scroll={isMobile ? { x: "max-content" } : { x: 900 }}
+          sticky={{ offsetHeader: isMobile ? 72 : 88 }}
         />
       </div>
     </div>
