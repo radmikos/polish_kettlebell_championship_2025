@@ -17,7 +17,7 @@ from kb_live.models import (
     SquatResult,
     TGUResult,
 )
-from kb_live.services.ranking import rank_category_overall
+from kb_live.services.ranking import rank_category_disciplines, rank_category_overall
 
 DISCIPLINE_MODEL_MAP = {
     Discipline.SNATCH: SnatchResult,
@@ -84,8 +84,20 @@ def _schedule_overall_refresh(category_id: int, player_ids: Iterable[int] | None
     player_ids_set = {pid for pid in (player_ids or []) if pid}
 
     def _run():
+        affected_players = rank_category_disciplines(category_id)
+
+        players_to_refresh: set[int]
         if player_ids_set:
-            players = Player.objects.filter(pk__in=player_ids_set)
+            players_to_refresh = player_ids_set
+        elif affected_players:
+            players_to_refresh = affected_players
+        else:
+            players_to_refresh = set(
+                Player.objects.filter(categories__id=category_id).values_list("id", flat=True)
+            )
+
+        if players_to_refresh:
+            players = Player.objects.filter(pk__in=players_to_refresh)
             for player in players:
                 ensure_overall_for_player_categories(player, [category_id])
         rank_category_overall(category_id)

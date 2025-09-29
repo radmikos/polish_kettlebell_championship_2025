@@ -225,12 +225,19 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     list_display = (
         "player",
         "category_disp",
+        "snatch_place_disp",
         "snatch_points_disp",
+        "tgu_place_disp",
         "tgu_points_disp",
+        "see_saw_press_place_disp",
         "see_saw_press_points_disp",
+        "squat_place_disp",
         "squat_points_disp",
+        "pistol_place_disp",
         "pistol_points_disp",
+        "pull_up_place_disp",
         "pull_up_points_disp",
+        "placement_points_disp",
         "total_points_disp",
         "final_position_disp",
     )
@@ -243,8 +250,15 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "see_saw_press_points",
         "pistol_points",
         "pull_up_points",
+        "snatch_place",
+        "tgu_place",
+        "squat_place",
+        "see_saw_press_place",
+        "pistol_place",
+        "pull_up_place",
         "tiebreak_points",
         "total_points",
+        "placement_points",
         "counted_disciplines",
     )
     actions = (
@@ -275,11 +289,29 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     tgu_points_disp.short_description = "Punkty TGU"
     tgu_points_disp.admin_order_field = "tgu_points"
 
+    def snatch_place_disp(self, obj):
+        return obj.snatch_place or "-"
+
+    snatch_place_disp.short_description = "Miejsce Snatch"
+    snatch_place_disp.admin_order_field = "snatch_place"
+
+    def tgu_place_disp(self, obj):
+        return obj.tgu_place or "-"
+
+    tgu_place_disp.short_description = "Miejsce TGU"
+    tgu_place_disp.admin_order_field = "tgu_place"
+
     def see_saw_press_points_disp(self, obj):
         return self._fmt(obj.see_saw_press_points)
 
     see_saw_press_points_disp.short_description = "Punkty See Saw Press"
     see_saw_press_points_disp.admin_order_field = "see_saw_press_points"
+
+    def see_saw_press_place_disp(self, obj):
+        return obj.see_saw_press_place or "-"
+
+    see_saw_press_place_disp.short_description = "Miejsce See Saw Press"
+    see_saw_press_place_disp.admin_order_field = "see_saw_press_place"
 
     def squat_points_disp(self, obj):
         return self._fmt(obj.squat_points)
@@ -287,11 +319,23 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     squat_points_disp.short_description = "Punkty KB Squat"
     squat_points_disp.admin_order_field = "squat_points"
 
+    def squat_place_disp(self, obj):
+        return obj.squat_place or "-"
+
+    squat_place_disp.short_description = "Miejsce KB Squat"
+    squat_place_disp.admin_order_field = "squat_place"
+
     def pistol_points_disp(self, obj):
         return self._fmt(obj.pistol_points)
 
     pistol_points_disp.short_description = "Punkty Pistol Squat"
     pistol_points_disp.admin_order_field = "pistol_points"
+
+    def pistol_place_disp(self, obj):
+        return obj.pistol_place or "-"
+
+    pistol_place_disp.short_description = "Miejsce Pistol Squat"
+    pistol_place_disp.admin_order_field = "pistol_place"
 
     def pull_up_points_disp(self, obj):
         return self._fmt(obj.pull_up_points)
@@ -299,14 +343,26 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     pull_up_points_disp.short_description = "Punkty Pull-Up"
     pull_up_points_disp.admin_order_field = "pull_up_points"
 
+    def pull_up_place_disp(self, obj):
+        return obj.pull_up_place or "-"
+
+    pull_up_place_disp.short_description = "Miejsce Pull-Up"
+    pull_up_place_disp.admin_order_field = "pull_up_place"
+
+    def placement_points_disp(self, obj):
+        return self._fmt(obj.placement_points)
+
+    placement_points_disp.short_description = "Suma punktów z miejsc"
+    placement_points_disp.admin_order_field = "placement_points"
+
     def total_points_disp(self, obj):
         return self._fmt(obj.total_points)
 
-    total_points_disp.short_description = "Suma punktów"
+    total_points_disp.short_description = "Suma punktów (konkurencje)"
     total_points_disp.admin_order_field = "total_points"
 
     def final_position_disp(self, obj):
-        # Miejsce = punkty w klasyfikacji generalnej (im mniej tym lepiej)
+        # Miejsce wg sumy punktów z miejsc (niższa wartość jest lepsza)
         return obj.final_position if obj.final_position is not None else "-"
 
     final_position_disp.short_description = "Miejsce końcowe"
