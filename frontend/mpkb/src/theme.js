@@ -1,7 +1,10 @@
 const appTheme = {
   token: {
-    colorBgBase: "#0d0d0d",
-    colorTextBase: "#f5f5f5",
+    colorBgBase: "#022c22",
+    colorBgLayout: "#064e3b",
+    colorBgContainer: "#065f46",
+    colorBgElevated: "#047857",
+    colorTextBase: "#d1fae5",
     colorPrimary: "#38bdf8",
     colorSuccess: "#4ade80",
     colorWarning: "#facc15",
@@ -12,12 +15,12 @@ const appTheme = {
   },
   components: {
     Layout: {
-      headerBg: "#000000",
-      bodyBg: "#000000",
-      footerBg: "#000000",
+      headerBg: "#064e3b",
+      bodyBg: "#064e3b",
+      footerBg: "#064e3b",
     },
     Typography: {
-      colorTextHeading: "#ffffff",
+      colorTextHeading: "#d1fae5",
     },
     Button: {
       colorPrimaryBg: "#38bdf8",
@@ -26,12 +29,12 @@ const appTheme = {
       borderRadius: 999,
     },
     Table: {
-      headerBg: "#121212",
-      headerColor: "#f5f5f5",
-      rowHoverBg: "#1f1f1f",
+      headerBg: "#022c22",
+      headerColor: "#bbf7d0",
+      rowHoverBg: "#03352a",
     },
     Card: {
-      colorBgContainer: "#1e293b",
+      colorBgContainer: "#03352a",
     },
   },
 };

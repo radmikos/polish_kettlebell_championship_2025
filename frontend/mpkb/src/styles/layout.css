@@ -1,0 +1,96 @@
+/* Layout shell & structural surfaces */
+:where([class^="css-dev-only-do-not-override"]).ant-layout,
+.ant-layout {
+  background: #064e3b !important;
+}
+
+.ant-layout::before,
+.ant-layout::after,
+.ant-layout-header,
+.ant-layout-content,
+.ant-layout-footer,
+.ant-layout-sider {
+  background-color: #064e3b !important;
+}
+
+.app-shell {
+  --app-max-width: clamp(20rem, 90vw, 68rem);
+  --app-horizontal-padding: clamp(1.5rem, 5vw, 4rem);
+  --app-vertical-padding: clamp(3rem, 6vw, 6rem);
+  --app-section-gap: clamp(3rem, 7vw, 5.5rem);
+  min-height: 100vh;
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  padding: clamp(1rem, 2.5vw, 1.75rem) var(--app-horizontal-padding);
+  background: transparent;
+  border-bottom: 1px solid rgba(var(--color-text-primary-rgb), 0.08);
+}
+
+.app-brand {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 3.5vw, 1.85rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+}
+
+.app-header :where(.ant-btn-text).app-nav-link {
+  padding-inline: 0;
+  color: rgba(var(--color-text-primary-rgb), 0.72);
+  font-weight: 500;
+  transition: color var(--transition-base);
+}
+
+.app-header :where(.ant-btn-text).app-nav-link:hover,
+.app-header :where(.ant-btn-text).app-nav-link:focus-visible {
+  color: var(--color-text-primary);
+  background: transparent;
+}
+
+.app-content {
+  width: min(var(--app-max-width), 100%);
+  margin: 0 auto;
+  padding: var(--app-vertical-padding) var(--app-horizontal-padding);
+  display: grid;
+  gap: var(--app-section-gap);
+}
+
+.app-divider.ant-divider-horizontal {
+  margin: calc(var(--app-section-gap) - clamp(1.25rem, 3.5vw, 2.25rem)) 0;
+}
+
+.app-divider.ant-divider-horizontal::before,
+.app-divider.ant-divider-horizontal::after {
+  border-block-start-color: rgba(var(--color-text-primary-rgb), 0.08);
+}
+
+.app-footer {
+  text-align: center;
+  padding: clamp(1.5rem, 4vw, 2.5rem) var(--app-horizontal-padding);
+  background: transparent;
+  border-top: 1px solid rgba(var(--color-text-primary-rgb), 0.08);
+}
+
+.app-footer :where(.ant-typography) {
+  color: rgba(var(--color-text-primary-rgb), 0.64);
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .app-content,
+  .app-footer {
+    padding-inline: clamp(1rem, 7vw, 2rem);
+  }
+}

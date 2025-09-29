@@ -1,0 +1,42 @@
+/* Hero section */
+.app-hero {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  text-align: center;
+}
+
+.app-title.ant-typography {
+  margin: 0;
+  font-family: var(--font-heading);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: clamp(2.75rem, 7vw, 4.5rem);
+}
+
+.app-lead.ant-typography {
+  margin: 0 auto;
+  max-width: 40rem;
+  color: rgba(var(--color-text-primary-rgb), 0.72);
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
+}
+
+.app-hero-actions {
+  justify-content: center;
+  flex-wrap: wrap;
+  row-gap: 1rem;
+}
+
+.app-hero-actions .ant-btn {
+  min-width: clamp(9rem, 28vw, 12rem);
+}
+
+.app-hero-actions .ant-btn-ghost {
+  border-color: rgba(var(--color-text-primary-rgb), 0.32);
+  color: var(--color-text-primary);
+}
+
+.app-hero-actions .ant-btn-ghost:hover,
+.app-hero-actions .ant-btn-ghost:focus-visible {
+  border-color: rgba(var(--color-text-primary-rgb), 0.52);
+  background: rgba(var(--color-text-primary-rgb), 0.08);
+}

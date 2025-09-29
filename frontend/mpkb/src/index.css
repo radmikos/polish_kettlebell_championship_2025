@@ -1,46 +1,36 @@
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&family=Oswald:wght@400;600&display=swap");
 @import url("../../../shared/styles/tokens.css");
 
-/* Sekcja: Reset bazowy */
+/* Base reset */
 *,
 *::before,
 *::after {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
+  margin: 0;
 }
 
-/* Sekcja: Tło aplikacji */
+html,
+body {
+  min-height: 100%;
+}
+
 body {
   margin: 0;
-  min-height: 100vh;
   font-family: var(--font-ui);
   color: var(--color-text-primary);
   background: var(--color-bg-page);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color-scheme: dark;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+#root {
+  min-height: 100%;
 }
 
 code {
   font-family: "Source Code Pro", Menlo, Monaco, Consolas, "Courier New",
     monospace;
-}
-
-/* Sekcja: Widok mobilny */
-@media (max-width: 768px) {
-  body {
-    padding: calc(env(safe-area-inset-top, 0px) + 1rem)
-      clamp(0.85rem, 5vw, 1.2rem)
-      calc(env(safe-area-inset-bottom, 0px) + 1.25rem);
-  }
-}
-
-@media (max-width: 480px) {
-  body {
-    padding:
-      calc(env(safe-area-inset-top, 0px) + 0.85rem)
-      clamp(0.75rem, 6vw, 1.05rem)
-      calc(env(safe-area-inset-bottom, 0px) + 1.15rem);
-  }
 }
