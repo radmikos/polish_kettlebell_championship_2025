@@ -12,9 +12,8 @@
   height: 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-soft);
   border: 1px solid var(--color-border-strong);
-  background: rgba(var(--color-surface-overlay-rgb), 0.6);
+  background: var(--color-bg-panel);
 }
 
 .videoWrapper iframe {
@@ -42,15 +41,10 @@
 
 /* Sekcja: Karta informacji */
 .infoCard {
-  background: linear-gradient(
-    170deg,
-    rgba(var(--color-surface-840-rgb), 0.92) 0%,
-    rgba(var(--color-surface-870-rgb), 0.92) 100%
-  );
+  background: var(--color-bg-panel);
   padding: 1.75rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-hard);
   display: grid;
   gap: 0.85rem;
 }

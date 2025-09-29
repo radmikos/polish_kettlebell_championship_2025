@@ -16,14 +16,7 @@ body {
   min-height: 100vh;
   font-family: var(--font-ui);
   color: var(--color-text-primary);
-  background: radial-gradient(
-        circle at 3% 3%,
-        rgba(var(--color-primary-rgb), 0.18),
-        transparent 45%
-      )
-      fixed,
-    linear-gradient(150deg, var(--color-bg-panel) 0%, var(--color-bg-page) 100%)
-      fixed;
+  background: var(--color-bg-page);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color-scheme: dark;

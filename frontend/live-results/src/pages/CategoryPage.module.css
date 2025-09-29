@@ -22,15 +22,10 @@
 
 /* Sekcja: Karta meta danych */
 .metaCard {
-  background: linear-gradient(
-    160deg,
-    rgba(var(--color-surface-840-rgb), 0.85) 0%,
-    rgba(var(--color-surface-870-rgb), 0.85) 100%
-  );
+  background: var(--color-bg-panel);
   padding: 1.5rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-hard);
   display: grid;
   gap: 0.75rem;
 }
@@ -58,24 +53,19 @@
 .disciplineChip {
   padding: 0.3rem 0.65rem;
   border-radius: 999px;
-  background: rgba(var(--color-link-rgb), 0.12);
+  background: var(--color-bg-panel-soft);
   color: var(--color-link);
   font-size: 0.78rem;
   letter-spacing: 0.05em;
-  border: 1px solid rgba(var(--color-link-rgb), 0.35);
+  border: 1px solid var(--color-border-muted);
 }
 
 /* Sekcja: Tabela wyników */
 .tableCard {
-  background: linear-gradient(
-    170deg,
-    rgba(var(--color-surface-860-rgb), 0.9) 0%,
-    rgba(var(--color-surface-940-rgb), 0.9) 100%
-  );
+  background: var(--color-surface-720);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   padding: 1.25rem;
-  box-shadow: var(--shadow-soft);
 }
 
 .tableTitle {
@@ -88,10 +78,18 @@
   letter-spacing: 0.08em;
 }
 
-.placementsCell {
+.tablesStack {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.disciplineResultCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
 }
 
 /* Sekcja: Szczegóły rozszerzone */
@@ -99,7 +97,7 @@
   display: grid;
   gap: 1rem;
   padding: 1rem;
-  background: rgba(var(--color-surface-950-rgb), 0.55);
+  background: var(--bg-panel-soft);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
 }
@@ -150,18 +148,12 @@
   .toolbar {
     position: sticky;
     top: calc(var(--header-height) + 0.75rem);
-    background: linear-gradient(
-      165deg,
-      rgba(var(--color-surface-830-rgb), 0.92) 0%,
-      rgba(var(--color-surface-855-rgb), 0.92) 100%
-    );
+    background: var(--color-bg-panel);
     padding: 0.9rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-hard);
     z-index: 5;
     margin: 0 -0.25rem 1rem;
-    backdrop-filter: var(--blur-soft);
   }
 
   .toolbarActions {
@@ -179,9 +171,17 @@
     gap: 0.65rem;
   }
 
+  .disciplineResultCell {
+    font-size: 0.78rem;
+  }
+
   .tableCard {
     padding: 0.95rem;
     border-radius: var(--radius-md);
+  }
+
+  .tablesStack {
+    gap: 1.2rem;
   }
 
   .tableTitle {
@@ -206,6 +206,13 @@
   .tableCard :global(.ant-table-thead > tr > th),
   .tableCard :global(.ant-table-tbody > tr > td) {
     padding: 0.6rem 0.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .disciplineResultCell {
+    flex-direction: row;
+    gap: 0.75rem;
   }
 }
 
