@@ -58,9 +58,9 @@ const buildLabelMap = (disciplines: DisciplineLabel[] | undefined) => {
 };
 
 const getPlacementColor = (position: number | null | undefined): string | undefined => {
-  if (position === 1) return "gold";
-  if (position === 2) return "geekblue";
-  if (position === 3) return "volcano";
+  if (position === 1) return "var(--color-warning)";
+  if (position === 2) return "var(--color-link)";
+  if (position === 3) return "var(--color-primary)";
   return undefined;
 };
 
@@ -151,7 +151,7 @@ const useDisciplineColumns = (
       width: 110,
       align: "center",
       render: (value: boolean, record) =>
-        value ? <Tag color="gold">+1 pkt</Tag> : record.tiebreak_points ? formatNumber(record.tiebreak_points, 2) : "-",
+        value ? <Tag color="var(--color-warning)">+1 pkt</Tag> : record.tiebreak_points ? formatNumber(record.tiebreak_points, 2) : "-",
     },
   ];
 

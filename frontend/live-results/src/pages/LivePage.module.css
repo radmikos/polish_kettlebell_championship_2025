@@ -14,7 +14,7 @@
   overflow: hidden;
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--color-border-strong);
-  background: rgba(12, 20, 35, 0.6);
+  background: rgba(var(--color-surface-overlay-rgb), 0.6);
 }
 
 .videoWrapper iframe {
@@ -44,8 +44,8 @@
 .infoCard {
   background: linear-gradient(
     170deg,
-    rgba(18, 30, 52, 0.92) 0%,
-    rgba(9, 15, 28, 0.92) 100%
+    rgba(var(--color-surface-840-rgb), 0.92) 0%,
+    rgba(var(--color-surface-870-rgb), 0.92) 100%
   );
   padding: 1.75rem;
   border-radius: var(--radius-md);
