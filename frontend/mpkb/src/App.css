@@ -1,107 +1,106 @@
-/* Sekcja: Widok aplikacji */
-.App {
+.app-shell {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
 }
 
-/* Sekcja: Karta prezentacyjna */
-.App-header {
-  background: var(--color-bg-panel);
-  color: var(--color-text-primary);
-  min-height: 420px;
+
+.app-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 1.25rem;
-  font-size: 1rem;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  padding: 2.5rem;
+  justify-content: space-between;
+  padding: 0 clamp(16px, 4vw, 48px);
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.app-brand {
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.08em;
+  font-size: clamp(20px, 3vw, 28px);
+  color: #ffffff;
+}
+
+.app-nav-link {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.app-nav-link:hover {
+  color: #ffffff !important;
+  background: transparent !important;
+}
+
+.app-content {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: clamp(48px, 6vw, 96px) clamp(16px, 4vw, 64px);
+}
+
+.app-hero {
   text-align: center;
+  display: grid;
+  gap: clamp(16px, 3vw, 28px);
+  margin-bottom: clamp(48px, 6vw, 96px);
 }
 
-/* Sekcja: Logo animowane */
-.App-logo {
-  height: 160px;
-  pointer-events: none;
+.app-title {
+  margin: 0;
+  font-size: clamp(36px, 6vw, 72px) !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 18s linear;
-  }
+.app-lead {
+  margin: 0 auto;
+  max-width: 640px;
+  font-size: clamp(16px, 2.2vw, 20px);
+  color: rgba(245, 245, 245, 0.76);
 }
 
-/* Sekcja: Teksty pomocnicze */
-.App-header p {
-  font-family: var(--font-body);
-  color: var(--color-text-secondary);
-  line-height: 1.6;
+.app-divider {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  margin: clamp(32px, 4vw, 56px) 0;
 }
 
-.App-header code {
-  color: var(--color-primary);
-  font-weight: 600;
+.app-highlights {
+  display: grid;
+  gap: clamp(16px, 3vw, 28px);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
-/* Sekcja: Odnośniki */
-.App-link {
-  color: var(--color-link);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  transition: color var(--transition-base);
+.app-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: clamp(20px, 4vw, 32px);
+  backdrop-filter: blur(4px);
+  display: grid;
+  gap: 12px;
 }
 
-.App-link:hover {
-  color: var(--color-link-hover);
+.app-card .ant-typography {
+  margin: 0;
 }
 
-/* Sekcja: Animacja logo */
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.app-card .ant-typography-secondary {
+  color: rgba(245, 245, 245, 0.68) !important;
 }
 
-/* Sekcja: Widok mobilny */
+.app-footer {
+  text-align: center;
+  padding: 24px;
+  background: transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 @media (max-width: 768px) {
-  .App {
-    padding: 1.5rem;
+  .app-header {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 24px;
   }
 
-  .App-header {
-    min-height: auto;
-    padding: 2rem 1.5rem;
-    gap: 1rem;
-  }
-
-  .App-logo {
-    height: 130px;
-  }
-}
-
-@media (max-width: 500px) {
-  .App {
-    padding: 1.2rem;
-  }
-
-  .App-header {
-    padding: 1.8rem 1.2rem;
-    border-radius: var(--radius-md);
-  }
-
-  .App-logo {
-    height: 110px;
-  }
-
-  .App-header p {
-    font-size: 0.95rem;
+  .app-content {
+    padding: clamp(32px, 10vw, 64px) clamp(16px, 6vw, 48px);
   }
 }
