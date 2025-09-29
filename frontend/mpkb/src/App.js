@@ -1,23 +1,47 @@
-import { Layout, Typography, Button, Space, Divider } from "antd";
+import { Layout, Typography, Button, Space, Divider, Row, Col, Card } from "antd";
 import { ArrowRightOutlined, CalendarOutlined } from "@ant-design/icons";
 import "./App.css";
 
 const { Header, Content, Footer } = Layout;
 const { Title, Paragraph, Text } = Typography;
 
+const highlightItems = [
+  {
+    title: "Klasyfikacje na żywo",
+    description:
+      "Każda konkurencja aktualizuje się automatycznie po wprowadzeniu wyniku.",
+  },
+  {
+    title: "Panel organizatora",
+    description:
+      "Intuicyjne narzędzia do rejestracji, wprowadzania i weryfikacji rezultatów.",
+  },
+  {
+    title: "Dark mode by design",
+    description:
+      "Dedykowany motyw oparty na tokenach Ant Design dopasowany do identyfikacji zawodów.",
+  },
+];
+
 function App() {
   return (
     <Layout className="app-shell">
       <Header className="app-header">
         <div className="app-brand">MP KB 2025</div>
-        <Space size={16}>
+        <Space size={16} wrap>
           <Button type="text" className="app-nav-link">
             Wyniki live
           </Button>
           <Button type="text" className="app-nav-link">
             Regulamin
           </Button>
-          <Button type="primary" shape="round" icon={<CalendarOutlined />}>Harmonogram</Button>
+          <Button
+            type="primary"
+            shape="round"
+            icon={<CalendarOutlined />}
+          >
+            Harmonogram
+          </Button>
         </Space>
       </Header>
 
@@ -30,7 +54,7 @@ function App() {
             Oficjalna platforma zawodów. Śledź na bieżąco wyniki, klasyfikacje oraz harmonogram startów.
           </Paragraph>
 
-          <Space size="large">
+          <Space size="large" className="app-hero-actions" wrap>
             <Button
               type="primary"
               size="large"
@@ -47,26 +71,16 @@ function App() {
 
         <Divider className="app-divider" />
 
-        <section className="app-highlights">
-          <article className="app-card">
-            <Title level={3}>Klasyfikacje na żywo</Title>
-            <Paragraph type="secondary">
-              Każda konkurencja aktualizuje się automatycznie po wprowadzeniu wyniku.
-            </Paragraph>
-          </article>
-          <article className="app-card">
-            <Title level={3}>Panel organizatora</Title>
-            <Paragraph type="secondary">
-              Intuicyjne narzędzia do rejestracji, wprowadzania i weryfikacji rezultatów.
-            </Paragraph>
-          </article>
-          <article className="app-card">
-            <Title level={3}>Dark mode by design</Title>
-            <Paragraph type="secondary">
-              Dedykowany motyw oparty na tokenach Ant Design dopasowany do identyfikacji zawodów.
-            </Paragraph>
-          </article>
-        </section>
+        <Row gutter={[24, 24]} className="app-highlights">
+          {highlightItems.map((item) => (
+            <Col xs={24} md={8} key={item.title}>
+              <Card className="app-feature-card" bordered={false}>
+                <Title level={3}>{item.title}</Title>
+                <Paragraph type="secondary">{item.description}</Paragraph>
+              </Card>
+            </Col>
+          ))}
+        </Row>
       </Content>
 
       <Footer className="app-footer">

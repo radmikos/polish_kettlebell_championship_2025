@@ -8,7 +8,6 @@ import {
   Button,
   Input,
   Table,
-  Tag,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { ArrowLeftOutlined, ReloadOutlined } from "@ant-design/icons";
