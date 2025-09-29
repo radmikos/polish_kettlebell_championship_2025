@@ -5,11 +5,10 @@
 }
 
 .card {
-  background: rgba(var(--color-neutral-050-rgb), 0.08);
-  border: 1px solid rgba(var(--color-white-rgb), 0.12);
+  background: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: var(--card-shadow);
 }
 
 .cardTitle {
@@ -33,7 +32,7 @@
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: rgba(var(--color-white-rgb), 0.7);
+  color: var(--color-text-secondary);
 }
 
 .value {
@@ -42,7 +41,7 @@
 
 .tagline {
   font-style: italic;
-  color: rgba(var(--color-white-rgb), 0.7);
+  color: var(--color-text-secondary);
 }
 
 @media (min-width: 768px) {

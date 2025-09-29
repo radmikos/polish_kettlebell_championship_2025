@@ -13,14 +13,7 @@
 /* Sekcja: Tło strony */
 body {
   font-family: var(--font-ui);
-  background: radial-gradient(
-        circle at 0% 0%,
-        rgba(var(--color-primary-rgb), 0.14),
-        transparent 55%
-      )
-      fixed,
-    linear-gradient(140deg, var(--color-bg-panel) 0%, var(--color-bg-page) 100%)
-      fixed;
+  background: var(--color-bg-page);
   color: var(--color-text-primary);
   min-height: 100vh;
   display: flex;
@@ -50,7 +43,6 @@ body {
 .image-container img {
   max-width: 100%;
   height: auto;
-  filter: drop-shadow(0 12px 35px rgba(var(--color-surface-950-rgb), 0.55));
 }
 
 /* Sekcja: Karta informacji */
@@ -58,14 +50,9 @@ body {
   width: 100%;
   padding: 2rem;
   text-align: center;
-  background: linear-gradient(
-    160deg,
-    var(--color-bg-panel-soft) 0%,
-    var(--color-bg-panel) 100%
-  );
+  background: var(--color-bg-panel);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-soft);
 }
 
 .info-container h1 {
