@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
-from django.db.models import Q
+from django.db.models import Q, F, FloatField, ExpressionWrapper
+from django.db.models.functions import Greatest
 
 from .forms import CategoryPlacementForm
 from .models import (
@@ -85,6 +86,8 @@ class _ResultExtraColumnsMixin:
             return "-"
 
     best_attempt_display.short_description = "Max próba"
+    # allow ordering by annotated best_attempt_value when available
+    best_attempt_display.admin_order_field = "best_attempt_value"
 
     def percent_bw_display(self, obj):
         player = getattr(obj, "player", None)
@@ -105,6 +108,7 @@ class _ResultExtraColumnsMixin:
     def points_display(self, obj):
         return obj.points if obj.points is not None else "N/A"
 
+    points_display.short_description = "Punkty"
     points_display.short_description = "Punkty"
 
 
@@ -141,12 +145,25 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
     list_select_related = ("player",)
     readonly_fields = ("points_display", "best_attempt_display", "percent_bw_display", "categories_display")
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # annotate with kettlebell_weight as best_attempt_value and percent BW
+        qs = qs.select_related("player").annotate(
+            best_attempt_value=F("kettlebell_weight"),
+            percent_bw_value=ExpressionWrapper(
+                F("kettlebell_weight") * 1.0 / F("player__weight"), output_field=FloatField()
+            ),
+        )
+        return qs
+
     # Override: for snatch show formula points instead of kettlebell weight
     def best_attempt_display(self, obj):
         pts = obj.points
         return round(pts, 3) if pts is not None else "-"
 
     best_attempt_display.short_description = "Wynik (wzór)"
+    # ordering for snatch: order by annotated best attempt value (kettlebell_weight)
+    # admin_order_field assignments for the overridden methods are set below
 
 
 # Attempts based base admin
@@ -162,6 +179,15 @@ class _AttemptsResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixi
             + self.attempts_fields
             + ("best_attempt_display", "percent_bw_display", "points_display", "categories_display")
         )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # annotate greatest of attempts as best_attempt_value and percent of BW
+        qs = qs.select_related("player").annotate(
+            best_attempt_value=Greatest(*self.attempts_fields),
+            percent_bw_value=ExpressionWrapper(F("best_attempt_value") * 1.0 / F("player__weight"), output_field=FloatField()),
+        )
+        return qs
 
 
 @admin.register(PistolResult)
@@ -327,6 +353,18 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
             self.message_user(request, f"Dodano {len(to_create)} nowych rekordów overall.")
         else:
             self.message_user(request, "Brak brakujących rekordów overall.")
+
+
+# -- Set admin_order_field attributes for mixin display methods that rely on annotated fields
+# For attempt-based admins, order by annotated best_attempt_value / percent_bw_value
+_AttemptsResultAdmin.best_attempt_display.admin_order_field = "best_attempt_value"
+_AttemptsResultAdmin.percent_bw_display.admin_order_field = "percent_bw_value"
+_AttemptsResultAdmin.points_display.admin_order_field = "best_attempt_value"
+
+# For snatch admin (kettlebell_weight used as best_attempt_value)
+SnatchResultAdmin.best_attempt_display.admin_order_field = "best_attempt_value"
+SnatchResultAdmin.percent_bw_display.admin_order_field = "percent_bw_value"
+SnatchResultAdmin.points_display.admin_order_field = "best_attempt_value"
 
 
 class CategoryAdminForm(forms.ModelForm):
