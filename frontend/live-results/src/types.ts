@@ -20,9 +20,12 @@ export interface PlayerCategoryResult {
   category: Pick<CategorySummary, "id" | "name">;
   final_position: number | null;
   total_points: number | null;
+  discipline_places: DisciplinePlaces;
+  discipline_place_points: DisciplinePoints;
+  placement_points: number | null;
   counted_disciplines: number | null;
   tiebreak_points: number | null;
-  discipline_points: Record<string, number | null>;
+  discipline_points: DisciplinePoints;
 }
 
 export interface PlayerSummary {
@@ -71,6 +74,16 @@ export interface DisciplinePoints {
   [key: string]: number | null;
 }
 
+export interface DisciplinePlaces {
+  snatch: number | null;
+  tgu: number | null;
+  squat: number | null;
+  see_saw_press: number | null;
+  pistol: number | null;
+  pull_up: number | null;
+  [key: string]: number | null;
+}
+
 export interface PlacementEntry {
   discipline: string;
   label: string;
@@ -83,6 +96,9 @@ export interface CategoryOverallRow {
   player: PlayerSummary;
   final_position: number | null;
   total_points: number | null;
+  discipline_places: DisciplinePlaces;
+  discipline_place_points: DisciplinePoints;
+  placement_points: number | null;
   counted_disciplines: number | null;
   tiebreak_points: number | null;
   tiebreak_applied: boolean;

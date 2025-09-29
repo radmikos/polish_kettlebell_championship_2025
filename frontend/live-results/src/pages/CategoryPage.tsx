@@ -92,6 +92,36 @@ const getDisciplineResult = (
   return row[key] as SnatchResult | AttemptsResult | null;
 };
 
+const computePercentBw = (row: CategoryOverallRow, code: string): number | null => {
+  const weight = row.player?.weight;
+  if (!weight || weight <= 0) {
+    return null;
+  }
+
+  const result = getDisciplineResult(row, code);
+  if (!result) {
+    return null;
+  }
+
+  if (isSnatchResult(result)) {
+    const kettlebell = result.kettlebell_weight;
+    if (kettlebell === null || kettlebell === undefined) {
+      return null;
+    }
+    return (kettlebell / weight) * 100;
+  }
+
+  if (isAttemptsResult(result)) {
+    const best = result.best_attempt;
+    if (best === null || best === undefined) {
+      return null;
+    }
+    return (best / weight) * 100;
+  }
+
+  return null;
+};
+
 const fetchCategory = async (categoryId: string | undefined): Promise<CategoryQueryResponse> => {
   if (!categoryId) {
     throw new Error("Identyfikator kategorii jest wymagany");
@@ -106,7 +136,16 @@ const fetchCategory = async (categoryId: string | undefined): Promise<CategoryQu
     const left = a.final_position ?? Number.MAX_SAFE_INTEGER;
     const right = b.final_position ?? Number.MAX_SAFE_INTEGER;
     if (left !== right) return left - right;
-    return (a.total_points ?? 0) < (b.total_points ?? 0) ? 1 : -1;
+
+    const leftPlacement = a.placement_points ?? Number.MAX_SAFE_INTEGER;
+    const rightPlacement = b.placement_points ?? Number.MAX_SAFE_INTEGER;
+    if (leftPlacement !== rightPlacement) return leftPlacement - rightPlacement;
+
+    const leftPoints = a.total_points ?? 0;
+    const rightPoints = b.total_points ?? 0;
+    if (leftPoints !== rightPoints) return rightPoints - leftPoints;
+
+    return (a.player?.full_name ?? '').localeCompare(b.player?.full_name ?? '');
   });
 
   return {
@@ -158,26 +197,62 @@ const useOverallColumns = (
       sorter: (a, b) => (a.player?.weight ?? 0) - (b.player?.weight ?? 0),
     },
     {
+      title: "Suma punktów z miejsc",
+      dataIndex: "placement_points",
+      key: "placement-points",
+      align: "right",
+      width: 180,
+      render: (value: number | null | undefined) => formatNumber(value, 1),
+      sorter: (a, b) =>
+        (a.placement_points ?? Number.MAX_SAFE_INTEGER) -
+        (b.placement_points ?? Number.MAX_SAFE_INTEGER),
+    },
+    {
       title: "Suma punktów",
       dataIndex: "total_points",
       key: "total",
       align: "right",
-      width: 140,
+      width: 160,
       render: (value: number | null | undefined) => formatNumber(value, 2),
-      sorter: (a, b) => (a.total_points ?? 0) - (b.total_points ?? 0),
+      sorter: (a, b) => (b.total_points ?? 0) - (a.total_points ?? 0),
     },
   ];
 
-  const disciplineColumns: ColumnsType<ProcessedCategoryRow> = (info?.disciplines ?? []).map((code) => ({
-    title: `Punkty · ${labelMap.get(code) ?? code}`,
-    key: `overall-points-${code}`,
-    dataIndex: ["discipline_points", code],
-    align: "right",
-    render: (value: number | null | undefined) => formatNumber(value, 2),
-    sorter: (a, b) =>
-      (a.discipline_points?.[code] ?? 0) - (b.discipline_points?.[code] ?? 0),
-    width: 140,
-  }));
+  const disciplineColumns: ColumnsType<ProcessedCategoryRow> = (info?.disciplines ?? []).flatMap((code) => {
+    const label = labelMap.get(code) ?? code;
+
+    const placeColumn: ColumnsType<ProcessedCategoryRow>[number] = {
+      title: `Miejsce · ${label}`,
+      key: `overall-place-${code}`,
+      dataIndex: ["discipline_places", code],
+      align: "center",
+      width: 120,
+      render: (_value: number | null | undefined, record) => {
+        const place = record.discipline_places?.[code];
+        return place ?? "-";
+      },
+      sorter: (a, b) =>
+        (a.discipline_places?.[code] ?? Number.MAX_SAFE_INTEGER) -
+        (b.discipline_places?.[code] ?? Number.MAX_SAFE_INTEGER),
+    };
+
+    const pointsColumn: ColumnsType<ProcessedCategoryRow>[number] = {
+      title: `Punkty GC · ${label}`,
+      key: `overall-points-${code}`,
+      dataIndex: ["discipline_place_points", code],
+      align: "right",
+      width: 140,
+      render: (_value: number | null | undefined, record) => {
+        const gcPoints = record.discipline_place_points?.[code];
+        return gcPoints === null || gcPoints === undefined ? "-" : formatInteger(gcPoints);
+      },
+      sorter: (a, b) =>
+        (a.discipline_place_points?.[code] ?? Number.MAX_SAFE_INTEGER) -
+        (b.discipline_place_points?.[code] ?? Number.MAX_SAFE_INTEGER),
+    };
+
+    return [placeColumn, pointsColumn];
+  });
 
   const columns = [...baseColumns, ...disciplineColumns];
 
@@ -242,6 +317,21 @@ const createDisciplineColumns = (code: string): ColumnsType<DisciplineRow> => {
       width: 110,
       render: (value: number | null | undefined) => formatNumber(value, 1),
       sorter: (a, b) => (a.player?.weight ?? 0) - (b.player?.weight ?? 0),
+    },
+    {
+      title: "% BW",
+      key: `${code}-percent-bw`,
+      align: "right",
+      width: 110,
+      render: (_value, record) => {
+        const percent = computePercentBw(record, code);
+        return percent === null ? "-" : `${formatNumber(percent, 1)}%`;
+      },
+      sorter: (a, b) => {
+        const left = computePercentBw(a, code) ?? Number.POSITIVE_INFINITY;
+        const right = computePercentBw(b, code) ?? Number.POSITIVE_INFINITY;
+        return left - right;
+      },
     },
   ];
 

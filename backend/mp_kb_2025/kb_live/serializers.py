@@ -146,6 +146,15 @@ class PlayerDetailSerializer(PlayerSummarySerializer):
                     "category": CategoryNestedSerializer(row.category).data,
                     "final_position": row.final_position,
                     "total_points": row.total_points,
+                    "discipline_places": {
+                        "snatch": row.snatch_place,
+                        "tgu": row.tgu_place,
+                        "squat": row.squat_place,
+                        "see_saw_press": row.see_saw_press_place,
+                        "pistol": row.pistol_place,
+                        "pull_up": row.pull_up_place,
+                    },
+                    "placement_points": row.placement_points,
                     "counted_disciplines": row.counted_disciplines,
                     "tiebreak_points": row.tiebreak_points,
                     "discipline_points": {
@@ -155,6 +164,14 @@ class PlayerDetailSerializer(PlayerSummarySerializer):
                         "see_saw_press": row.see_saw_press_points,
                         "pistol": row.pistol_points,
                         "pull_up": row.pull_up_points,
+                    },
+                    "discipline_place_points": {
+                        "snatch": row.snatch_place,
+                        "tgu": row.tgu_place,
+                        "squat": row.squat_place,
+                        "see_saw_press": row.see_saw_press_place,
+                        "pistol": row.pistol_place,
+                        "pull_up": row.pull_up_place,
                     },
                 }
             )
@@ -219,6 +236,8 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
     pistol_result = serializers.SerializerMethodField()
     pull_up_result = serializers.SerializerMethodField()
     discipline_points = serializers.SerializerMethodField()
+    discipline_places = serializers.SerializerMethodField()
+    discipline_place_points = serializers.SerializerMethodField()
     placements = serializers.SerializerMethodField()
     tiebreak_applied = serializers.SerializerMethodField()
 
@@ -229,6 +248,9 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
             "player",
             "final_position",
             "total_points",
+            "discipline_places",
+            "discipline_place_points",
+            "placement_points",
             "counted_disciplines",
             "tiebreak_points",
             "tiebreak_applied",
@@ -277,6 +299,26 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
             "see_saw_press": overall.see_saw_press_points,
             "pistol": overall.pistol_points,
             "pull_up": overall.pull_up_points,
+        }
+
+    def get_discipline_places(self, overall: CategoryOverallResult) -> dict[str, int | None]:
+        return {
+            "snatch": overall.snatch_place,
+            "tgu": overall.tgu_place,
+            "squat": overall.squat_place,
+            "see_saw_press": overall.see_saw_press_place,
+            "pistol": overall.pistol_place,
+            "pull_up": overall.pull_up_place,
+        }
+
+    def get_discipline_place_points(self, overall: CategoryOverallResult) -> dict[str, float | None]:
+        return {
+            "snatch": overall.snatch_place,
+            "tgu": overall.tgu_place,
+            "squat": overall.squat_place,
+            "see_saw_press": overall.see_saw_press_place,
+            "pistol": overall.pistol_place,
+            "pull_up": overall.pull_up_place,
         }
 
     def get_tiebreak_applied(self, overall: CategoryOverallResult) -> bool:
