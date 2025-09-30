@@ -1,24 +1,24 @@
 /* Design system tokens: kolory, cienie, promienie i fonty */
 :root {
   /* Bazowe powierzchnie */
-  --color-surface-950: #0D0D0D;
-  --color-surface-940: #000000;
-  --color-surface-900: #1e293b;
-  --color-surface-870: #22304c;
-  --color-surface-880: #1d2a43;
-  --color-surface-860: #22314e;
-  --color-surface-855: #1f2b45;
-  --color-surface-840: #1f2d44;
-  --color-surface-830: #1b263b;
-  --color-surface-820: #1e2b42;
-  --color-surface-780: #24344d;
-  --color-surface-760: #283a55;
-  --color-surface-720: #FF6B00;
-  --color-surface-overlay: #1e293b;
+  --color-surface-950: #0D0D0D; /* kolor tła aplikacji */
+  --color-surface-940: #ec1212;
+  --color-surface-900: #d7620e;  /* kolor kart z kategorii*/
+  --color-surface-870: #696969;
+  --color-surface-880: #d5a919;
+  --color-surface-860: #6a7487;
+  --color-surface-855: #4810efe3;
+  --color-surface-840: #1f66d1;
+  --color-surface-830: #595959;
+  --color-surface-820: #81c316;
+  --color-surface-780: #6b6f1f;
+  --color-surface-760: #b1350c;
+  --color-surface-720: #000000;
+  --color-surface-overlay: #88a7d9;
 
   /* Kolory semantyczne */
-  --color-primary: #38bdf8;
-  --color-primary-hover: #0ea5e9;
+  --color-primary: #0bb6ff;
+  --color-primary-hover: #1d5a76;
   --color-link: #38bdf8;
   --color-link-hover: #0ea5e9;
   --color-success: #4ade80;
@@ -27,12 +27,12 @@
   --color-error-soft: #f87171;
 
   /* Neutralne */
-  --color-border-primary: #bec4cb;
+  --color-border-primary: #FFC857; /* kolor obramowania kart z kategoriami */
   --color-border-strong: #303b4d;
   --color-border-muted: #475569;
-  --color-text-primary: #d1fae5;
-  --color-text-secondary: #86efac;
-  --color-text-base: #bbf7d0;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #ffffff;
+  --color-text-base: #ffffff;
   --color-text-contrast: #0f172a;
   --color-neutral-050: #c6106b;
   --color-neutral-700: #374151;
@@ -43,44 +43,12 @@
   --color-calc-background: #1f2937;
   --color-calc-card: #1f2937;
 
-  /* Kanały RGB do pracy z przezroczystością */
-  --color-surface-950-rgb: 15, 23, 42;
-  --color-surface-940-rgb: 17, 28, 45;
-  --color-surface-900-rgb: 30, 41, 59;
-  --color-surface-870-rgb: 34, 48, 76;
-  --color-surface-880-rgb: 29, 42, 67;
-  --color-surface-860-rgb: 34, 49, 78;
-  --color-surface-855-rgb: 31, 43, 69;
-  --color-surface-840-rgb: 31, 45, 68;
-  --color-surface-830-rgb: 27, 38, 59;
-  --color-surface-820-rgb: 30, 43, 66;
-  --color-surface-780-rgb: 36, 52, 77;
-  --color-surface-760-rgb: 40, 58, 85;
-  --color-surface-720-rgb: 45, 63, 92;
-  --color-surface-overlay-rgb: 30, 41, 59;
-  --color-border-primary-rgb: 31, 41, 55;
-  --color-border-muted-rgb: 71, 85, 105;
-  --color-text-primary-rgb: 209, 250, 229;
-  --color-text-base-rgb: 187, 247, 208;
-  --color-neutral-050-rgb: 245, 243, 244;
-  --color-neutral-700-rgb: 55, 65, 81;
-  --color-white-rgb: 34, 197, 94;
-  --color-black-rgb: 0, 0, 0;
-  --color-primary-rgb: 56, 189, 248;
-  --color-primary-hover-rgb: 14, 165, 233;
-  --color-link-rgb: 56, 189, 248;
-  --color-link-hover-rgb: 14, 165, 233;
-  --color-success-rgb: 74, 222, 128;
-  --color-warning-rgb: 250, 204, 21;
-  --color-error-rgb: 239, 68, 68;
-  --color-error-soft-rgb: 248, 113, 113;
+  /* Kolory tabel kategorii */
+  --color-category-table-bg: #ff0000;
+  --color-category-table-header-bg: #ff7fbd;
+  --color-category-table-row-hover-bg: #ff3333;
 
-  /* Promienie, przejścia, blur */
-  --radius-lg: 18px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
-  --transition-base: 0.2s ease;
-  --blur-soft: none;
+
 
   /* Fonty */
   --font-heading: "Bebas Neue", sans-serif;
@@ -106,13 +74,14 @@
   --color-bg-page: var(--color-surface-950);
   --color-bg-panel: var(--color-surface-900);
   --color-bg-panel-soft: var(--color-surface-950);
-  --color-bg-panel-strong: var(--color-surface-950);
+  --color-bg-panel-strong: var(--color-surface-940);
   --color-border: var(--color-border-primary);
-  --color-text: var(--color-text-base);
+  --color-text: var(--color-text-primary);
   --color-background: var(--color-surface-950);
   --color-card: var(--color-calc-card);
   --color-text-label: var(--color-text-secondary);
   --color-text-inverse: var(--color-text-contrast);
   --font-text: var(--font-body);
   --font-family: var(--font-family-default);
+
 }
