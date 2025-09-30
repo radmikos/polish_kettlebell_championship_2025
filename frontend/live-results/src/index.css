@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&family=Oswald:wght@400;600&display=swap");
-@import url("../../../shared/styles/tokens.css");
+@import url("@mpkb/shared-styles/styles/tokens.css");
 
 /* Sekcja: Reset bazowy */
 *,
