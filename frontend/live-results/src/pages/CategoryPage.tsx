@@ -31,6 +31,10 @@ type CategoryQueryResponse = {
   results: CategoryResultsResponse;
 };
 
+// let SHOW_GENERAL_CLASSIFICATION = true;
+// Odkomentuj poniższą linię, aby ukryć klasyfikację generalną na potrzeby testów lub prezentacji.
+let SHOW_GENERAL_CLASSIFICATION = false;
+
 type ProcessedCategoryRow = CategoryOverallRow & { displayRank: number };
 type DisciplineRow = ProcessedCategoryRow & { disciplineRank: number };
 
@@ -590,28 +594,30 @@ const CategoryPage = () => {
       </div>
 
       <div className={styles.tablesStack}>
-        <div className={styles.tableCard}>
-          <div className={styles.tableTitle}>
-            <Title level={3}>Klasyfikacja generalna</Title>
+        {SHOW_GENERAL_CLASSIFICATION && (
+          <div className={styles.tableCard}>
+            <div className={styles.tableTitle}>
+              <Title level={3}>Klasyfikacja generalna</Title>
+            </div>
+            <Table<ProcessedCategoryRow>
+              columns={overallColumns}
+              dataSource={filteredResults}
+              rowKey={(record) => record.id}
+              pagination={
+                isMobile
+                  ? { pageSize: 15, showSizeChanger: false }
+                  : { pageSize: 25, showSizeChanger: true }
+              }
+              expandable={{
+                expandRowByClick: true,
+                expandedRowRender,
+              }}
+              size={isMobile ? "small" : "middle"}
+              scroll={isMobile ? { x: "max-content" } : { x: "max-content" }}
+              sticky={{ offsetHeader: isMobile ? 72 : 88 }}
+            />
           </div>
-          <Table<ProcessedCategoryRow>
-            columns={overallColumns}
-            dataSource={filteredResults}
-            rowKey={(record) => record.id}
-            pagination={
-              isMobile
-                ? { pageSize: 15, showSizeChanger: false }
-                : { pageSize: 25, showSizeChanger: true }
-            }
-            expandable={{
-              expandRowByClick: true,
-              expandedRowRender,
-            }}
-            size={isMobile ? "small" : "middle"}
-            scroll={isMobile ? { x: "max-content" } : { x: "max-content" }}
-            sticky={{ offsetHeader: isMobile ? 72 : 88 }}
-          />
-        </div>
+        )}
 
         {disciplineTables.map((table) => (
           <div key={table.code} className={styles.tableCard}>
