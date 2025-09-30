@@ -1,7 +1,7 @@
 import { Typography, Alert } from "antd";
 import styles from "./LivePage.module.css";
 
-const { Title, Paragraph, Link } = Typography;
+const { Title, Link } = Typography;
 
 const videoId = import.meta.env.VITE_LIVE_YOUTUBE_ID;
 const youtubeEmbedUrl = videoId ? `https://www.youtube.com/watch?v=dQw4w9WgXcQ` : null;
