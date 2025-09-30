@@ -43,7 +43,7 @@ const formatSecondaryName = (name: string): string | null => {
 
 const buildMetaDescription = (category: CategorySummary): string => {
   if (category.drop_worst_result) {
-    return "Odrzucamy najgorszy wynik (Snatch liczony obowiązkowo)";
+    return "";
   }
   return "";
 };
