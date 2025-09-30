@@ -62,10 +62,35 @@
 
 /* Sekcja: Tabela wyników */
 .tableCard {
-  background: var(--color-surface-720);
+  background: var(--color-surface-870);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   padding: 1.25rem;
+}
+
+/* Tabela korzysta z globalnych zmiennych kolorów dla spójności */
+.tableCard :global(.ant-table) {
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.tableCard :global(.ant-table-container) {
+  background: var(--category-table-background);
+  border-radius: calc(var(--radius-md) - 4px);
+}
+
+.tableCard :global(.ant-table-thead > tr > th) {
+  background: var(--category-table-header-background) !important;
+  color: var(--color-text-contrast);
+}
+
+.tableCard :global(.ant-table-tbody > tr > td) {
+  background: var(--category-table-background);
+  color: var(--color-text-primary);
+}
+
+.tableCard :global(.ant-table-tbody > tr.ant-table-row:hover > td) {
+  background: var(--category-table-row-hover-background);
 }
 
 .tableTitle {

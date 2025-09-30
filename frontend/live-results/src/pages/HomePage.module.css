@@ -4,6 +4,7 @@
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
+  background: var(--home-section-background);
 }
 
 /* Sekcja: Nagłówek strony */
@@ -14,17 +15,18 @@
   gap: 0.75rem;
   max-width: 860px;
   margin: 0 auto;
+  color: var(--color-text-primary);
 }
 
 .intro {
   font-size: 1.1rem;
-  color: var(--color-text-primary);
+  color: var(--home-accent-color);
   margin-bottom: 1rem;
 }
 
 /* Sekcja: Kategorie */
 .categorySection {
-  background: transparent;
+  background: var(--home-section-background);
   border-radius: var(--radius-md);
   padding: 0;
 }
@@ -32,7 +34,7 @@
 .sectionTitle {
   font-family: var(--font-heading);
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: var(--home-accent-color);
   letter-spacing: 1.1px;
   margin-top: 2.5rem;
   margin-bottom: 1.2rem;
@@ -65,7 +67,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  color: var(--color-text-primary);
+  color: var(--home-accent-color);
   min-height: 160px;
   touch-action: manipulation;
 }
@@ -73,7 +75,7 @@
 .categoryCard:hover {
   transform: translateY(-4px);
   border-color: var(--color-primary);
-  background: var(--color-bg-panel);
+  background: var(--home-card-hover-background);
 }
 
 .categoryName {
@@ -83,7 +85,7 @@
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: var(--color-text-primary);
+  color: white;
 }
 
 .secondaryName {
@@ -93,14 +95,13 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-align: center;
-  color: var(--color-text-primary);
+
 }
 
 .meta {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-text-primary);
   text-align: center;
 }
 

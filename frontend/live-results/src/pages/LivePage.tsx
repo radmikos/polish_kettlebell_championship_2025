@@ -4,18 +4,14 @@ import styles from "./LivePage.module.css";
 const { Title, Paragraph, Link } = Typography;
 
 const videoId = import.meta.env.VITE_LIVE_YOUTUBE_ID;
-const youtubeEmbedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-const youtubeWatchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : null;
+const youtubeEmbedUrl = videoId ? `https://www.youtube.com/watch?v=dQw4w9WgXcQ` : null;
+const youtubeWatchUrl = videoId ? `https://www.youtube.com/watch?v=dQw4w9WgXcQ` : null;
 
 const LivePage = () => {
   return (
     <div className={styles.livePage}>
       <Title level={1}>Transmisja na żywo</Title>
-      <Paragraph>
-        Łap puls zawodów bezpośrednio z hali w Ząbkowicach Śląskich. Jeżeli
-        transmisja nie jest jeszcze aktywna, wróć do nas w oficjalnych godzinach
-        startu.
-      </Paragraph>
+
 
       {youtubeEmbedUrl ? (
         <div className={styles.videoWrapper}>

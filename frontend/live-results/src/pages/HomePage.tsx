@@ -17,7 +17,7 @@ interface GroupConfig {
 }
 
 const groupConfig: GroupConfig[] = [
-  { key: "junior", title: "Junior & Youth", keywords: ["junior", "u16", "u18", "u19", "młodzież", "youth"] },
+  { key: "junior", title: "Junior", keywords: ["junior", "u16", "u18", "u19", "młodzież", "youth"] },
   { key: "amateur", title: "Amator", keywords: ["amator", "amateur", "open"] },
   { key: "pro", title: "Zawodowcy", keywords: ["pro", "elita", "elite", "professional"] },
   { key: "masters", title: "Masters", keywords: ["master", "masters", "veteran"] },
@@ -45,7 +45,7 @@ const buildMetaDescription = (category: CategorySummary): string => {
   if (category.drop_worst_result) {
     return "Odrzucamy najgorszy wynik (Snatch liczony obowiązkowo)";
   }
-  return "Liczymy wszystkie starty";
+  return "";
 };
 
 const assignGroup = (name: string): GroupKey => {
@@ -118,11 +118,6 @@ const HomePage = () => {
     <div className={styles.homePage}>
       <header className={styles.header}>
         <Title level={1}>Wyniki na żywo</Title>
-        <Paragraph className={styles.intro}>
-          Śledź na bieżąco rezultaty Mistrzostw Polski Kettlebell 2025. Wybierz
-          kategorię, aby zobaczyć aktualne klasyfikacje, punkty dyscyplin oraz
-          dogrywki.
-        </Paragraph>
         {isFetching && <Text>Odświeżamy dane…</Text>}
       </header>
 

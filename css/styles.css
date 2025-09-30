@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600&display=swap");
 @import url("../shared/styles/tokens.css");
 
-/* Sekcja: Reset bazowy */
+/* Sekcja: Reset bazowy - elementy globalne */
 *,
 *::before,
 *::after {
@@ -10,42 +10,43 @@
   padding: 0;
 }
 
-/* Sekcja: Tło strony */
-body {
-  font-family: var(--font-ui);
-  background: var(--color-text-secondary);
-  color: var(--color-text-secondary);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  gap: 1.5rem;
-  color-scheme: dark;
-}
-
-/* Sekcja: Główny kontener */
+/* Sekcja: Layout bazowy - kontenery kolumnowe */
+body,
 .main-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: min(100%, 860px);
   gap: 1.5rem;
 }
 
-/* Sekcja: Oprawa graficzna */
+/* Sekcja: Tło strony głównej */
+body {
+  font-family: var(--font-ui);
+  background: #ff0000;
+  color: var(--color-text-secondary);
+  min-height: 100vh;
+  padding: 1.5rem;
+  color-scheme: dark;
+}
+
+/* Sekcja: Główny kontener treści */
+.main-container {
+  width: min(100%, 860px);
+}
+
+/* Sekcja: Oprawa graficzna - kontener */
 .image-container {
   text-align: center;
 }
 
+/* Sekcja: Oprawa graficzna - obraz */
 .image-container img {
   max-width: 100%;
   height: auto;
 }
 
-/* Sekcja: Karta informacji */
+/* Sekcja: Karta informacji - kontener */
 .info-container {
   width: 100%;
   padding: 2rem;
@@ -53,50 +54,61 @@ body {
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  --info-heading-size: clamp(2.2rem, 5vw, 3.1rem);
+  --info-heading-spacing: 1.4px;
+  --info-copy-size: 1.05rem;
+  --info-copy-line-height: 1.6;
+  --info-copy-margin: 1.75rem;
 }
 
+/* Sekcja: Karta informacji - nagłówek */
 .info-container h1 {
   font-family: var(--font-heading);
-  font-size: clamp(2.2rem, 5vw, 3.1rem);
+  font-size: var(--info-heading-size);
   font-weight: 600;
-  letter-spacing: 1.4px;
-  color: var(--color-primary);
+  letter-spacing: var(--info-heading-spacing);
+  color: var(--color-text-primary);
   margin-bottom: 0.75rem;
 }
 
+/* Sekcja: Karta informacji - akapit */
 .info-container p {
   font-family: var(--font-text);
-  font-size: 1.05rem;
+  font-size: var(--info-copy-size);
   color: var(--color-text-secondary);
-  line-height: 1.6;
-  margin-bottom: 1.75rem;
+  line-height: var(--info-copy-line-height);
+  margin-bottom: var(--info-copy-margin);
 }
 
-/* Sekcja: Media społecznościowe */
+/* Sekcja: Media społecznościowe - wrapper ikon */
 .icons-social {
   display: flex;
   justify-content: center;
   gap: 1.5rem;
+  --social-icon-size: 2.5rem;
 }
 
+/* Sekcja: Media społecznościowe - link podstawowy */
 .icons-social a {
   color: var(--color-text-primary);
-  font-size: 2.5rem;
+  font-size: var(--social-icon-size);
   transition: color var(--transition-base), transform var(--transition-base);
 }
 
-.icons-social a:hover {
+/* Sekcja: Media społecznościowe - interakcje */
+.icons-social a:is(:hover, :focus-visible) {
   color: var(--color-link);
   transform: translateY(-4px);
 }
 
-/* Sekcja: Stopka */
+/* Sekcja: Stopka - kontener */
 footer {
   font-size: 0.85rem;
   color: var(--color-text-secondary);
   text-align: center;
 }
 
+/* Sekcja: Stopka - link podstawowy */
 footer a {
   color: var(--color-link);
   text-decoration: none;
@@ -104,12 +116,14 @@ footer a {
   transition: color var(--transition-base);
 }
 
-footer a:hover {
+/* Sekcja: Stopka - interakcje */
+footer a:is(:hover, :focus-visible) {
   color: var(--color-link-hover);
 }
 
 /* Sekcja: Widok mobilny */
 @media (max-width: 600px) {
+  /* Sekcja mobilna: Tło strony */
   body {
     padding:
       calc(env(safe-area-inset-top, 0px) + 1rem)
@@ -120,48 +134,39 @@ footer a:hover {
     gap: 1.25rem;
   }
 
+  /* Sekcja mobilna: Karta informacji i jej typografia */
   .info-container {
     padding: clamp(1.3rem, 5vw, 1.6rem);
+    --info-heading-size: clamp(1.8rem, 8vw, 2.2rem);
+    --info-copy-size: 0.95rem;
+    --info-copy-margin: 1.15rem;
   }
 
-  .info-container h1 {
-    font-size: clamp(1.8rem, 8vw, 2.2rem);
-  }
-
-  .info-container p {
-    font-size: 0.95rem;
-    margin-bottom: 1.15rem;
-  }
-
+  /* Sekcja mobilna: Wrapper ikon społecznościowych */
   .icons-social {
     gap: 1rem;
+    --social-icon-size: 2.2rem;
   }
 
-  .icons-social a {
-    font-size: 2.2rem;
-  }
-
+  /* Sekcja mobilna: Główny kontener */
   .main-container {
     width: 100%;
     gap: 1.3rem;
   }
 }
 
+/* Sekcja: Widok bardzo mobilny */
 @media (max-width: 420px) {
+  /* Sekcja bardzo mobilna: Karta informacji i typografia */
   .info-container {
     padding: 1.15rem;
+    --info-heading-spacing: 1.1px;
+    --info-copy-size: 0.92rem;
+    --info-copy-line-height: 1.5;
   }
 
-  .info-container h1 {
-    letter-spacing: 1.1px;
-  }
-
-  .info-container p {
-    font-size: 0.92rem;
-    line-height: 1.5;
-  }
-
-  .icons-social a {
-    font-size: 2rem;
+  /* Sekcja bardzo mobilna: Wrapper ikon społecznościowych */
+  .icons-social {
+    --social-icon-size: 2rem;
   }
 }
