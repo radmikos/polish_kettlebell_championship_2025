@@ -593,7 +593,6 @@ const CategoryPage = () => {
         <div className={styles.tableCard}>
           <div className={styles.tableTitle}>
             <Title level={3}>Klasyfikacja generalna</Title>
-            <Text type="secondary">Rekordy: {filteredResults.length}</Text>
           </div>
           <Table<ProcessedCategoryRow>
             columns={overallColumns}
@@ -618,7 +617,6 @@ const CategoryPage = () => {
           <div key={table.code} className={styles.tableCard}>
             <div className={styles.tableTitle}>
               <Title level={3}>Wyniki · {table.label}</Title>
-              <Text type="secondary">Rekordy: {table.rows.length}</Text>
             </div>
             <Table<DisciplineRow>
               columns={table.columns}
