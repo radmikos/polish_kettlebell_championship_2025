@@ -139,7 +139,7 @@ class CategoryOverallResult(models.Model):
         tb_exists = self.category.tiebreaks_applied.filter(player=self.player).exists()
         self.tiebreak_points = 1.0 if tb_exists else 0.0
 
-        limit = getattr(self.category, "max_counted_disciplines", None) or 0
+        drop_worst = bool(getattr(self.category, "drop_worst_result", False))
 
         placements = self._placements_map()
 
@@ -152,19 +152,31 @@ class CategoryOverallResult(models.Model):
             (Discipline.PULL_UP, "pull_up_place"),
         ]
 
-        place_values: list[int] = []
+        place_entries: list[tuple[str, int]] = []
         for code, attr_name in place_fields:
             value = placements.get(code)
             if isinstance(value, int) and value > 0:
                 setattr(self, attr_name, value)
                 if code in allowed_set:
-                    place_values.append(value)
+                    place_entries.append((code, value))
             else:
                 setattr(self, attr_name, None)
 
-        if place_values:
-            places_sorted = sorted(place_values)
-            counted_places = places_sorted[:limit] if limit > 0 else places_sorted
+        counted_entries = list(place_entries)
+
+        if drop_worst and len(counted_entries) > 1:
+            worst_candidate: tuple[int, tuple[str, int]] | None = None
+            for idx, entry in enumerate(counted_entries):
+                code, place_value = entry
+                if code == Discipline.SNATCH:
+                    continue
+                if worst_candidate is None or place_value > worst_candidate[1][1]:
+                    worst_candidate = (idx, entry)
+            if worst_candidate is not None:
+                counted_entries.pop(worst_candidate[0])
+
+        if counted_entries:
+            counted_places = [place for _code, place in counted_entries]
             self.counted_disciplines = len(counted_places)
             self.placement_points = float(sum(counted_places))
         else:

@@ -449,11 +449,10 @@ class CategoryAdminForm(forms.ModelForm):
         required=False,
         label="Dyscypliny",
     )
-    max_counted_disciplines = forms.IntegerField(
+    drop_worst_result = forms.BooleanField(
         required=False,
-        min_value=1,
-        label="Liczba punktowanych konkurencji",
-        help_text="Podaj ile najlepszych wyników ma liczyć się do sumy miejsc. Pozostaw puste aby liczyć wszystkie.",
+        label="Odrzuć najgorszy wynik",
+        help_text="Jeśli zaznaczone, najgorszy wynik zawodnika (poza Snatch) nie będzie liczony w klasyfikacji.",
     )
 
     class Meta:
@@ -464,35 +463,16 @@ class CategoryAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
             self.fields["disciplines"].initial = self.instance.disciplines
-            self.fields["max_counted_disciplines"].initial = self.instance.max_counted_disciplines
+            self.fields["drop_worst_result"].initial = bool(self.instance.drop_worst_result)
 
     def clean_disciplines(self):
         return sorted(self.cleaned_data["disciplines"])
-
-    def clean_max_counted_disciplines(self):
-        value = self.cleaned_data.get("max_counted_disciplines")
-        if value is None:
-            return None
-        if value <= 0:
-            raise forms.ValidationError("Wartość musi być dodatnia.")
-        return value
-
-    def clean(self):
-        cleaned_data = super().clean()
-        limit = cleaned_data.get("max_counted_disciplines")
-        disciplines = cleaned_data.get("disciplines") or []
-        if limit is not None and disciplines and limit > len(disciplines):
-            self.add_error(
-                "max_counted_disciplines",
-                "Liczba punktowanych konkurencji nie może przekraczać liczby dyscyplin w kategorii.",
-            )
-        return cleaned_data
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     form = CategoryAdminForm
-    list_display = ("name", "get_disciplines_display", "max_counted_disciplines_display")
+    list_display = ("name", "get_disciplines_display", "drop_worst_result_display")
     search_fields = ("name",)
     ordering = ("name",)
 
@@ -501,7 +481,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
     get_disciplines_display.short_description = "Dyscypliny"
 
-    def max_counted_disciplines_display(self, obj):
-        return obj.max_counted_disciplines or "-"
+    def drop_worst_result_display(self, obj):
+        return "Tak" if obj.drop_worst_result else "Nie"
 
-    max_counted_disciplines_display.short_description = "Liczba punktowanych"
+    drop_worst_result_display.short_description = "Odrzuć najgorszy wynik"

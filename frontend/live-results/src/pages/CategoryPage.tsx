@@ -576,7 +576,9 @@ const CategoryPage = () => {
           {info.name}
         </Title>
         <Paragraph>
-          Liczymy {info.max_counted_disciplines ? `${info.max_counted_disciplines} najlepsze wyniki` : "wszystkie konkurencje"}.
+          {info.drop_worst_result
+            ? "W klasyfikacji pomijamy najgorszy wynik zawodnika (Snatch zawsze liczony)."
+            : "Liczymy wszystkie konkurencje."}
         </Paragraph>
         <div className={styles.disciplines}>
           {(info.disciplines_verbose ?? []).map((disc) => (

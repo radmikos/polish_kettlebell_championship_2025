@@ -42,8 +42,8 @@ const formatSecondaryName = (name: string): string | null => {
 };
 
 const buildMetaDescription = (category: CategorySummary): string => {
-  if (category.max_counted_disciplines && category.max_counted_disciplines > 0) {
-    return `Liczone najlepsze ${category.max_counted_disciplines} konkurencje`;
+  if (category.drop_worst_result) {
+    return "Odrzucamy najgorszy wynik (Snatch liczony obowiązkowo)";
   }
   return "Liczymy wszystkie starty";
 };
