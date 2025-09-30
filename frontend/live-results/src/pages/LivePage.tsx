@@ -1,12 +1,19 @@
-import { Typography, Alert } from "antd";
 import styles from "./LivePage.module.css";
 
-const { Title, Link } = Typography;
+// Paste your YouTube links (full URL or just the video id) directly below.
+// The component will render one player per entry in this array.
+// Example:
+// const rawList = [
+//   'https://www.youtube.com/watch?v=abcDefGhIJk',
+//   'https://youtu.be/xyz123AbC',
+//   'dQw4w9WgXcQ' // bare id also works
+// ];
 
-// Read the live YouTube value from Vite environment. It may be a full URL
-// (watch/embed/short) or just the video id — handle both so the iframe is shown
-// when the user provides a link.
-const rawYoutube = import.meta.env.VITE_LIVE_YOUTUBE_ID;
+const rawList: string[] = [
+  // TODO: replace these example links with your actual YouTube links or ids
+  'https://www.youtube.com/embed/dQw4w9WgXcQ?si=MtK3vPJ4V3EXJKuA',
+  'https://www.youtube.com/embed/dQw4w9WgXcQ?si=MtK3vPJ4V3EXJKuA',
+];
 
 function buildYoutubeUrls(input: string | undefined | null) {
   if (!input) return { embedUrl: null as string | null, watchUrl: null as string | null };
@@ -51,65 +58,22 @@ function buildYoutubeUrls(input: string | undefined | null) {
   }
 }
 
-// Accept multiple links in the same env var separated by commas or newlines.
-const rawList = rawYoutube
-  ? String(rawYoutube)
-      .split(/[,\n]+/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-  : [];
-
 const parsed = rawList.map((s) => buildYoutubeUrls(s));
 const youtubeEmbedUrls = parsed.map((p) => p.embedUrl).filter(Boolean) as string[];
-const youtubeWatchUrls = parsed.map((p) => p.watchUrl).filter(Boolean) as string[];
 
 const LivePage = () => {
   return (
     <div className={styles.livePage}>
-      <Title level={1}>Transmisja na żywo</Title>
-
-
-      {youtubeEmbedUrls.length > 0 ? (
-        <>
-          {youtubeEmbedUrls.map((src, idx) => (
-            <div key={`${src}-${idx}`} className={styles.videoWrapper}>
-              <iframe
-                src={src}
-                title={`Transmisja Mistrzostw Polski Kettlebell 2025 ${idx + 1}`}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          ))}
-        </>
-      ) : (
-        <Alert
-          type="info"
-          showIcon
-          message="Transmisja w przygotowaniu"
-          description="Link do relacji live pojawi się tutaj tuż przed rozpoczęciem zawodów."
-        />
-      )}
-
-      <div className={styles.infoCard}>
-        <Title level={3}>Przydatne odnośniki</Title>
-        <div className={styles.links}>
-          {youtubeWatchUrls.length > 0 ? (
-            <>
-              {youtubeWatchUrls.map((href, i) => (
-                <Link key={`${href}-${i}`} href={href} target="_blank" rel="noopener noreferrer">
-                  {youtubeWatchUrls.length > 1 ? `Otwórz transmisję ${i + 1} na YouTube` : "Otwórz transmisję na YouTube"}
-                </Link>
-              ))}
-            </>
-          ) : (
-            <span>Link do transmisji pojawi się tutaj, gdy będzie dostępny.</span>
-          )}
-          <Link href="/">
-            Powrót do listy kategorii
-          </Link>
+      {youtubeEmbedUrls.map((src, idx) => (
+        <div key={`${src}-${idx}`} className={styles.videoWrapper}>
+          <iframe
+            src={src}
+            title={`transmission-${idx + 1}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
         </div>
-      </div>
+      ))}
     </div>
   );
 };
