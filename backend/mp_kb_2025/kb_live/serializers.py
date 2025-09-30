@@ -37,7 +37,7 @@ class CategoryBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ("id", "name", "disciplines", "disciplines_verbose", "max_counted_disciplines")
+        fields = ("id", "name", "disciplines", "disciplines_verbose", "drop_worst_result")
         read_only_fields = fields
 
     def get_disciplines_verbose(self, obj: Category) -> list[dict[str, str]]:

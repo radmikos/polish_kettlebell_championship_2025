@@ -13,7 +13,7 @@ export interface CategorySummary {
   name: string;
   disciplines: string[];
   disciplines_verbose: DisciplineLabel[];
-  max_counted_disciplines: number | null;
+  drop_worst_result: boolean;
 }
 
 export interface PlayerCategoryResult {
