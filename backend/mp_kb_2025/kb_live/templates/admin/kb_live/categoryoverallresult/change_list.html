@@ -1,0 +1,42 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block search %}
+<div class="row g-2 align-items-end category-filter-row">
+    <div class="col-12 col-md-auto">
+        <label for="id_category_filter" class="form-label mb-1">{% trans "Kategoria" %}</label>
+        <select id="id_category_filter" class="form-select category-filter-select" data-param="{{ category_filter_param_name }}">
+            <option value="">{% trans "Wszystkie kategorie" %}</option>
+            {% for category in category_filter_choices %}
+                <option value="{{ category.pk }}"{% if selected_category_filter == category.pk|stringformat:"s" %} selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col">
+        {{ block.super }}
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+    {{ block.super }}
+    <script>
+        (function() {
+            const select = document.getElementById("id_category_filter");
+            if (!select) {
+                return;
+            }
+            select.addEventListener("change", function handleCategoryFilterChange() {
+                const paramName = select.dataset.param;
+                const url = new URL(window.location.href);
+                if (select.value) {
+                    url.searchParams.set(paramName, select.value);
+                } else {
+                    url.searchParams.delete(paramName);
+                }
+                url.searchParams.delete("p");
+                window.location.assign(url.toString());
+            });
+        }());
+    </script>
+{% endblock %}
