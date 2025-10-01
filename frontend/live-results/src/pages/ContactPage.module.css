@@ -11,12 +11,6 @@
   padding: 1.5rem;
 }
 
-.cardTitle {
-  font-family: var(--font-body) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
 .contactGrid {
   display: grid;
   gap: 1.25rem;
