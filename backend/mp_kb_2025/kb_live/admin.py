@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
-from django.db.models import Q
+from django.db.models import Q, F, FloatField, ExpressionWrapper, Case, When, Value
+from django.db.models.functions import Greatest
 
 from .forms import CategoryPlacementForm
 from .models import (
@@ -85,6 +86,8 @@ class _ResultExtraColumnsMixin:
             return "-"
 
     best_attempt_display.short_description = "Max próba"
+    # allow ordering by annotated best_attempt_value when available
+    best_attempt_display.admin_order_field = "best_attempt_value"
 
     def percent_bw_display(self, obj):
         player = getattr(obj, "player", None)
@@ -105,6 +108,7 @@ class _ResultExtraColumnsMixin:
     def points_display(self, obj):
         return obj.points if obj.points is not None else "N/A"
 
+    points_display.short_description = "Punkty"
     points_display.short_description = "Punkty"
 
 
@@ -132,6 +136,7 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
         "player",
         "repetitions",
         "kettlebell_weight",
+        "place",
         "best_attempt_display",
         "percent_bw_display",
         "points_display",
@@ -139,7 +144,29 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
     )
     search_fields = ("player__surname", "player__name", "player__club__name")
     list_select_related = ("player",)
-    readonly_fields = ("points_display", "best_attempt_display", "percent_bw_display", "categories_display")
+    readonly_fields = (
+        "place",
+        "points_display",
+        "best_attempt_display",
+        "percent_bw_display",
+        "categories_display",
+    )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # annotate with kettlebell_weight as best_attempt_value and percent BW
+        percent_ratio = ExpressionWrapper(
+            F("kettlebell_weight") * 1.0 / F("player__weight"), output_field=FloatField()
+        )
+        qs = qs.select_related("player").annotate(
+            best_attempt_value=F("kettlebell_weight"),
+            percent_bw_value=Case(
+                When(player__weight__gt=0, then=percent_ratio),
+                default=Value(None),
+                output_field=FloatField(),
+            ),
+        )
+        return qs
 
     # Override: for snatch show formula points instead of kettlebell weight
     def best_attempt_display(self, obj):
@@ -147,6 +174,8 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
         return round(pts, 3) if pts is not None else "-"
 
     best_attempt_display.short_description = "Wynik (wzór)"
+    # ordering for snatch: order by annotated best attempt value (kettlebell_weight)
+    # admin_order_field assignments for the overridden methods are set below
 
 
 # Attempts based base admin
@@ -154,14 +183,43 @@ class _AttemptsResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixi
     attempts_fields = ("attempt_1", "attempt_2", "attempt_3")
     search_fields = ("player__surname", "player__name", "player__club__name")
     list_select_related = ("player",)
-    readonly_fields = ("points_display", "best_attempt_display", "percent_bw_display", "categories_display")
+    readonly_fields = (
+        "place",
+        "points_display",
+        "best_attempt_display",
+        "percent_bw_display",
+        "categories_display",
+    )
 
     def get_list_display(self, request):
         return (
             ("player",)
             + self.attempts_fields
-            + ("best_attempt_display", "percent_bw_display", "points_display", "categories_display")
+            + (
+                "place",
+                "best_attempt_display",
+                "percent_bw_display",
+                "points_display",
+                "categories_display",
+            )
         )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # annotate greatest of attempts as best_attempt_value and percent of BW
+        best_attempt_expr = Greatest(*self.attempts_fields)
+        percent_ratio = ExpressionWrapper(
+            best_attempt_expr * 1.0 / F("player__weight"), output_field=FloatField()
+        )
+        qs = qs.select_related("player").annotate(
+            best_attempt_value=best_attempt_expr,
+            percent_bw_value=Case(
+                When(player__weight__gt=0, then=percent_ratio),
+                default=Value(None),
+                output_field=FloatField(),
+            ),
+        )
+        return qs
 
 
 @admin.register(PistolResult)
@@ -199,12 +257,19 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     list_display = (
         "player",
         "category_disp",
+        "snatch_place_disp",
         "snatch_points_disp",
+        "tgu_place_disp",
         "tgu_points_disp",
+        "see_saw_press_place_disp",
         "see_saw_press_points_disp",
+        "squat_place_disp",
         "squat_points_disp",
+        "pistol_place_disp",
         "pistol_points_disp",
+        "pull_up_place_disp",
         "pull_up_points_disp",
+        "placement_points_disp",
         "total_points_disp",
         "final_position_disp",
     )
@@ -217,8 +282,15 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "see_saw_press_points",
         "pistol_points",
         "pull_up_points",
+        "snatch_place",
+        "tgu_place",
+        "squat_place",
+        "see_saw_press_place",
+        "pistol_place",
+        "pull_up_place",
         "tiebreak_points",
         "total_points",
+        "placement_points",
         "counted_disciplines",
     )
     actions = (
@@ -249,11 +321,29 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     tgu_points_disp.short_description = "Punkty TGU"
     tgu_points_disp.admin_order_field = "tgu_points"
 
+    def snatch_place_disp(self, obj):
+        return obj.snatch_place or "-"
+
+    snatch_place_disp.short_description = "Miejsce Snatch"
+    snatch_place_disp.admin_order_field = "snatch_place"
+
+    def tgu_place_disp(self, obj):
+        return obj.tgu_place or "-"
+
+    tgu_place_disp.short_description = "Miejsce TGU"
+    tgu_place_disp.admin_order_field = "tgu_place"
+
     def see_saw_press_points_disp(self, obj):
         return self._fmt(obj.see_saw_press_points)
 
     see_saw_press_points_disp.short_description = "Punkty See Saw Press"
     see_saw_press_points_disp.admin_order_field = "see_saw_press_points"
+
+    def see_saw_press_place_disp(self, obj):
+        return obj.see_saw_press_place or "-"
+
+    see_saw_press_place_disp.short_description = "Miejsce See Saw Press"
+    see_saw_press_place_disp.admin_order_field = "see_saw_press_place"
 
     def squat_points_disp(self, obj):
         return self._fmt(obj.squat_points)
@@ -261,11 +351,23 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     squat_points_disp.short_description = "Punkty KB Squat"
     squat_points_disp.admin_order_field = "squat_points"
 
+    def squat_place_disp(self, obj):
+        return obj.squat_place or "-"
+
+    squat_place_disp.short_description = "Miejsce KB Squat"
+    squat_place_disp.admin_order_field = "squat_place"
+
     def pistol_points_disp(self, obj):
         return self._fmt(obj.pistol_points)
 
     pistol_points_disp.short_description = "Punkty Pistol Squat"
     pistol_points_disp.admin_order_field = "pistol_points"
+
+    def pistol_place_disp(self, obj):
+        return obj.pistol_place or "-"
+
+    pistol_place_disp.short_description = "Miejsce Pistol Squat"
+    pistol_place_disp.admin_order_field = "pistol_place"
 
     def pull_up_points_disp(self, obj):
         return self._fmt(obj.pull_up_points)
@@ -273,14 +375,26 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     pull_up_points_disp.short_description = "Punkty Pull-Up"
     pull_up_points_disp.admin_order_field = "pull_up_points"
 
+    def pull_up_place_disp(self, obj):
+        return obj.pull_up_place or "-"
+
+    pull_up_place_disp.short_description = "Miejsce Pull-Up"
+    pull_up_place_disp.admin_order_field = "pull_up_place"
+
+    def placement_points_disp(self, obj):
+        return self._fmt(obj.placement_points)
+
+    placement_points_disp.short_description = "Suma punktów z miejsc"
+    placement_points_disp.admin_order_field = "placement_points"
+
     def total_points_disp(self, obj):
         return self._fmt(obj.total_points)
 
-    total_points_disp.short_description = "Suma punktów"
+    total_points_disp.short_description = "Suma punktów (konkurencje)"
     total_points_disp.admin_order_field = "total_points"
 
     def final_position_disp(self, obj):
-        # Miejsce = punkty w klasyfikacji generalnej (im mniej tym lepiej)
+        # Miejsce wg sumy punktów z miejsc (niższa wartość jest lepsza)
         return obj.final_position if obj.final_position is not None else "-"
 
     final_position_disp.short_description = "Miejsce końcowe"
@@ -329,6 +443,18 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
             self.message_user(request, "Brak brakujących rekordów overall.")
 
 
+# -- Set admin_order_field attributes for mixin display methods that rely on annotated fields
+# For attempt-based admins, order by annotated best_attempt_value / percent_bw_value
+_AttemptsResultAdmin.best_attempt_display.admin_order_field = "best_attempt_value"
+_AttemptsResultAdmin.percent_bw_display.admin_order_field = "percent_bw_value"
+_AttemptsResultAdmin.points_display.admin_order_field = "best_attempt_value"
+
+# For snatch admin (kettlebell_weight used as best_attempt_value)
+SnatchResultAdmin.best_attempt_display.admin_order_field = "best_attempt_value"
+SnatchResultAdmin.percent_bw_display.admin_order_field = "percent_bw_value"
+SnatchResultAdmin.points_display.admin_order_field = "best_attempt_value"
+
+
 class CategoryAdminForm(forms.ModelForm):
     disciplines = forms.MultipleChoiceField(
         choices=Discipline.choices,
@@ -336,11 +462,10 @@ class CategoryAdminForm(forms.ModelForm):
         required=False,
         label="Dyscypliny",
     )
-    max_counted_disciplines = forms.IntegerField(
+    drop_worst_result = forms.BooleanField(
         required=False,
-        min_value=1,
-        label="Liczba punktowanych konkurencji",
-        help_text="Podaj ile najlepszych wyników ma liczyć się do sumy miejsc. Pozostaw puste aby liczyć wszystkie.",
+        label="Odrzuć najgorszy wynik",
+        help_text="Jeśli zaznaczone, najgorszy wynik zawodnika (poza Snatch) nie będzie liczony w klasyfikacji.",
     )
 
     class Meta:
@@ -351,35 +476,16 @@ class CategoryAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
             self.fields["disciplines"].initial = self.instance.disciplines
-            self.fields["max_counted_disciplines"].initial = self.instance.max_counted_disciplines
+            self.fields["drop_worst_result"].initial = bool(self.instance.drop_worst_result)
 
     def clean_disciplines(self):
         return sorted(self.cleaned_data["disciplines"])
-
-    def clean_max_counted_disciplines(self):
-        value = self.cleaned_data.get("max_counted_disciplines")
-        if value is None:
-            return None
-        if value <= 0:
-            raise forms.ValidationError("Wartość musi być dodatnia.")
-        return value
-
-    def clean(self):
-        cleaned_data = super().clean()
-        limit = cleaned_data.get("max_counted_disciplines")
-        disciplines = cleaned_data.get("disciplines") or []
-        if limit is not None and disciplines and limit > len(disciplines):
-            self.add_error(
-                "max_counted_disciplines",
-                "Liczba punktowanych konkurencji nie może przekraczać liczby dyscyplin w kategorii.",
-            )
-        return cleaned_data
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     form = CategoryAdminForm
-    list_display = ("name", "get_disciplines_display", "max_counted_disciplines_display")
+    list_display = ("name", "get_disciplines_display", "drop_worst_result_display")
     search_fields = ("name",)
     ordering = ("name",)
 
@@ -388,7 +494,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
     get_disciplines_display.short_description = "Dyscypliny"
 
-    def max_counted_disciplines_display(self, obj):
-        return obj.max_counted_disciplines or "-"
+    def drop_worst_result_display(self, obj):
+        return "Tak" if obj.drop_worst_result else "Nie"
 
-    max_counted_disciplines_display.short_description = "Liczba punktowanych"
+    drop_worst_result_display.short_description = "Odrzuć najgorszy wynik"

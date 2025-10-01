@@ -8,10 +8,10 @@ import {
   Button,
   Input,
   Table,
-  Tag,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { ArrowLeftOutlined, ReloadOutlined } from "@ant-design/icons";
+import useBreakpoint from "antd/es/grid/hooks/useBreakpoint";
 import apiClient from "../services/api";
 import {
   CategorySummary,
@@ -30,6 +30,23 @@ type CategoryQueryResponse = {
   info: CategorySummary;
   results: CategoryResultsResponse;
 };
+
+// KLASYFIKACJA GENERALNA W KATEGORIACH
+let SHOW_GENERAL_CLASSIFICATION = true;
+
+type ProcessedCategoryRow = CategoryOverallRow & { displayRank: number };
+type DisciplineRow = ProcessedCategoryRow & { disciplineRank: number };
+
+const disciplineResultKeyMap = {
+  snatch: "snatch_result",
+  tgu: "tgu_result",
+  squat: "squat_result",
+  see_saw_press: "see_saw_press_result",
+  pistol: "pistol_result",
+  pull_up: "pull_up_result",
+} as const;
+
+type DisciplineResultKey = typeof disciplineResultKeyMap[keyof typeof disciplineResultKeyMap];
 
 const formatNumber = (value: number | null | undefined, digits = 2): string => {
   if (value === null || value === undefined || Number.isNaN(value)) {
@@ -56,11 +73,55 @@ const buildLabelMap = (disciplines: DisciplineLabel[] | undefined) => {
   return map;
 };
 
-const getPlacementColor = (position: number | null | undefined): string | undefined => {
-  if (position === 1) return "gold";
-  if (position === 2) return "geekblue";
-  if (position === 3) return "volcano";
-  return undefined;
+const isSnatchResult = (result: unknown): result is SnatchResult => {
+  return Boolean(result) && typeof result === "object" && "repetitions" in (result as Record<string, unknown>);
+};
+
+const isAttemptsResult = (result: unknown): result is AttemptsResult => {
+  return Boolean(result) && typeof result === "object" && "best_attempt" in (result as Record<string, unknown>);
+};
+
+const getDisciplinePlacement = (row: CategoryOverallRow, code: string) => {
+  return row.placements?.find((placement) => placement.discipline === code);
+};
+
+const getDisciplineResult = (
+  row: CategoryOverallRow,
+  code: string,
+): SnatchResult | AttemptsResult | null => {
+  const key = (disciplineResultKeyMap as Record<string, DisciplineResultKey | undefined>)[code];
+  if (!key) return null;
+  return row[key] as SnatchResult | AttemptsResult | null;
+};
+
+const computePercentBw = (row: CategoryOverallRow, code: string): number | null => {
+  const weight = row.player?.weight;
+  if (!weight || weight <= 0) {
+    return null;
+  }
+
+  const result = getDisciplineResult(row, code);
+  if (!result) {
+    return null;
+  }
+
+  if (isSnatchResult(result)) {
+    const kettlebell = result.kettlebell_weight;
+    if (kettlebell === null || kettlebell === undefined) {
+      return null;
+    }
+    return (kettlebell / weight) * 100;
+  }
+
+  if (isAttemptsResult(result)) {
+    const best = result.best_attempt;
+    if (best === null || best === undefined) {
+      return null;
+    }
+    return (best / weight) * 100;
+  }
+
+  return null;
 };
 
 const fetchCategory = async (categoryId: string | undefined): Promise<CategoryQueryResponse> => {
@@ -77,7 +138,12 @@ const fetchCategory = async (categoryId: string | undefined): Promise<CategoryQu
     const left = a.final_position ?? Number.MAX_SAFE_INTEGER;
     const right = b.final_position ?? Number.MAX_SAFE_INTEGER;
     if (left !== right) return left - right;
-    return (a.total_points ?? 0) < (b.total_points ?? 0) ? 1 : -1;
+
+    const leftPlacement = a.placement_points ?? Number.MAX_SAFE_INTEGER;
+    const rightPlacement = b.placement_points ?? Number.MAX_SAFE_INTEGER;
+    if (leftPlacement !== rightPlacement) return leftPlacement - rightPlacement;
+
+    return (a.player?.full_name ?? '').localeCompare(b.player?.full_name ?? '');
   });
 
   return {
@@ -86,21 +152,22 @@ const fetchCategory = async (categoryId: string | undefined): Promise<CategoryQu
   };
 };
 
-const useDisciplineColumns = (
+const useOverallColumns = (
   info: CategorySummary | undefined,
   labelMap: Map<string, string>,
-): ColumnsType<CategoryOverallRow & { displayRank: number }> => {
-  const baseColumns: ColumnsType<CategoryOverallRow & { displayRank: number }> = [
+): ColumnsType<ProcessedCategoryRow> => {
+  const baseColumns: ColumnsType<ProcessedCategoryRow> = [
     {
-      title: "M-ce",
+      title: "Miejsce",
       dataIndex: "displayRank",
       key: "rank",
-      width: 70,
+      width: 90,
       align: "center",
       sorter: (a, b) => (a.displayRank ?? 999) - (b.displayRank ?? 999),
+      render: (_value, record) => record.displayRank ?? "-",
     },
     {
-      title: "Zawodnik",
+      title: "Imię i nazwisko",
       dataIndex: ["player", "full_name"],
       key: "athlete",
       render: (_value, record) => record.player?.full_name ?? "-",
@@ -122,72 +189,159 @@ const useDisciplineColumns = (
       dataIndex: ["player", "weight"],
       key: "weight",
       align: "right",
-      width: 90,
+      width: 110,
       render: (value: number | null | undefined) => formatNumber(value, 1),
       sorter: (a, b) => (a.player?.weight ?? 0) - (b.player?.weight ?? 0),
     },
     {
-      title: "Suma pkt",
-      dataIndex: "total_points",
-      key: "total",
-      align: "right",
-      width: 110,
-      render: (value: number | null | undefined) => formatNumber(value, 2),
-      sorter: (a, b) => (a.total_points ?? 0) - (b.total_points ?? 0),
-    },
-    {
-      title: "Liczone konkurencje",
-      dataIndex: "counted_disciplines",
-      key: "counted",
-      width: 150,
-      align: "center",
-      render: (value: number | null | undefined) => formatInteger(value),
-    },
-    {
-      title: "Dogrywka",
-      dataIndex: "tiebreak_applied",
+      title: "Tie-break",
+      dataIndex: "tiebreak_points",
       key: "tiebreak",
-      width: 110,
       align: "center",
-      render: (value: boolean, record) =>
-        value ? <Tag color="gold">+1 pkt</Tag> : record.tiebreak_points ? formatNumber(record.tiebreak_points, 2) : "-",
+      width: 120,
+      render: (value: number | null | undefined) => formatInteger(value),
+      sorter: (a, b) => (a.tiebreak_points ?? 0) - (b.tiebreak_points ?? 0),
     },
   ];
 
-  const disciplineColumns: ColumnsType<CategoryOverallRow & { displayRank: number }> =
-    (info?.disciplines ?? []).map((code) => ({
-      title: `Punkty · ${labelMap.get(code) ?? code}`,
-      key: `points-${code}`,
-      dataIndex: ["discipline_points", code],
-      align: "right",
-      render: (value: number | null | undefined) => formatNumber(value, 2),
+  const disciplineColumns: ColumnsType<ProcessedCategoryRow> = (info?.disciplines ?? []).map((code) => {
+    const label = labelMap.get(code) ?? code;
+
+    return {
+      title: `Miejsce · ${label}`,
+      key: `overall-place-${code}`,
+      dataIndex: ["discipline_places", code],
+      align: "center",
+      width: 120,
+      render: (_value: number | null | undefined, record) =>
+        formatInteger(record.discipline_places?.[code]),
       sorter: (a, b) =>
-        (a.discipline_points?.[code] ?? 0) - (b.discipline_points?.[code] ?? 0),
-      width: 130,
-    }));
+        (a.discipline_places?.[code] ?? Number.MAX_SAFE_INTEGER) -
+        (b.discipline_places?.[code] ?? Number.MAX_SAFE_INTEGER),
+    };
+  });
 
-  const placementsColumn: ColumnsType<CategoryOverallRow & { displayRank: number }> = [
+  const sumColumn: ColumnsType<ProcessedCategoryRow>[number] = {
+    title: "Suma punktów",
+    dataIndex: "total_points",
+    key: "total-points",
+    align: "right",
+    width: 160,
+    render: (value: number | null | undefined) => formatInteger(value),
+    sorter: (a, b) =>
+      (a.total_points ?? Number.MAX_SAFE_INTEGER) -
+      (b.total_points ?? Number.MAX_SAFE_INTEGER),
+  };
+
+  return [...baseColumns, ...disciplineColumns, sumColumn];
+};
+
+const createDisciplineColumns = (code: string): ColumnsType<DisciplineRow> => {
+  const baseColumns: ColumnsType<DisciplineRow> = [
     {
-      title: "Miejsca w konkurencjach",
-      key: "placements",
-      render: (_value, record) => (
-        <div className={styles.placementsCell}>
-          {record.placements?.map((placement) => (
-            <Tag
-              key={`${placement.discipline}-${record.id}`}
-              color={getPlacementColor(placement.position)}
-            >
-              {labelMap.get(placement.discipline) ?? placement.discipline}
-              {" · "}
-              {placement.position ? `#${placement.position}` : "-"}
-            </Tag>
-          ))}
-        </div>
-      ),
+      title: "Miejsce",
+      dataIndex: "disciplineRank",
+      key: `${code}-rank`,
+      width: 90,
+      align: "center",
+      sorter: (a, b) => (a.disciplineRank ?? 999) - (b.disciplineRank ?? 999),
+      render: (_value, record) => {
+        const placement = getDisciplinePlacement(record, code);
+        return placement?.position ?? record.disciplineRank ?? "-";
+      },
+    },
+    {
+      title: "Imię i nazwisko",
+      dataIndex: ["player", "full_name"],
+      key: `${code}-athlete`,
+      render: (_value, record) => record.player?.full_name ?? "-",
+      sorter: (a, b) =>
+        (a.player?.full_name ?? "").localeCompare(b.player?.full_name ?? ""),
+      ellipsis: true,
+    },
+    {
+      title: "Klub",
+      dataIndex: ["player", "club", "name"],
+      key: `${code}-club`,
+      render: (value, record) => value ?? record.player?.club?.name ?? "-",
+      sorter: (a, b) =>
+        (a.player?.club?.name ?? "").localeCompare(b.player?.club?.name ?? ""),
+      ellipsis: true,
+    },
+    {
+      title: "Waga",
+      dataIndex: ["player", "weight"],
+      key: `${code}-weight`,
+      align: "right",
+      width: 110,
+      render: (value: number | null | undefined) => formatNumber(value, 1),
+      sorter: (a, b) => (a.player?.weight ?? 0) - (b.player?.weight ?? 0),
+    },
+    {
+      title: "% BW",
+      key: `${code}-percent-bw`,
+      align: "right",
+      width: 110,
+      render: (_value, record) => {
+        const percent = computePercentBw(record, code);
+        return percent === null ? "-" : `${formatNumber(percent, 1)}%`;
+      },
+      sorter: (a, b) => {
+        const left = computePercentBw(a, code) ?? Number.POSITIVE_INFINITY;
+        const right = computePercentBw(b, code) ?? Number.POSITIVE_INFINITY;
+        return left - right;
+      },
     },
   ];
 
-  return [...baseColumns, ...disciplineColumns, ...placementsColumn];
+  const resultColumn = {
+    title: "Wynik",
+    key: `${code}-result`,
+    render: (_value: unknown, record: DisciplineRow) => {
+      const result = getDisciplineResult(record, code);
+      if (!result) {
+        return "-";
+      }
+
+      if (isSnatchResult(result)) {
+        return (
+          <div className={styles.disciplineResultCell}>
+            <span>Powtórzenia: {formatInteger(result.repetitions)}</span>
+            <span>Kettlebell: {formatNumber(result.kettlebell_weight, 1)} kg</span>
+          </div>
+        );
+      }
+
+      if (isAttemptsResult(result)) {
+        const attempts = [result.attempt_1, result.attempt_2, result.attempt_3]
+          .filter((attempt): attempt is number => attempt !== null && attempt !== undefined)
+          .map((attempt) => formatNumber(attempt, 1))
+          .join(" · ");
+
+        return (
+          <div className={styles.disciplineResultCell}>
+            <span>Najlepsza próba: {formatNumber(result.best_attempt, 1)}</span>
+            {attempts && <span>Próby: {attempts}</span>}
+          </div>
+        );
+      }
+
+      return "-";
+    },
+  } satisfies ColumnsType<DisciplineRow>[number];
+
+  const pointsColumn: ColumnsType<DisciplineRow>[number] = {
+    title: "Punkty",
+    key: `${code}-points`,
+    dataIndex: ["discipline_points", code],
+    align: "right",
+    width: 130,
+    render: (value: number | null | undefined) => formatNumber(value, 2),
+    sorter: (a, b) =>
+      (a.discipline_points?.[code] ?? 0) - (b.discipline_points?.[code] ?? 0),
+  };
+
+  return [...baseColumns, resultColumn, pointsColumn];
 };
 
 const renderAttemptsDetails = (
@@ -208,6 +362,7 @@ const renderAttemptsDetails = (
     <div key={key} className={styles.expandDiscipline}>
       <div className={styles.expandHeader}>{label}</div>
       <div className={styles.expandMeta}>
+        <span>Miejsce: {formatInteger(result.place)}</span>
         <span>Próba 1: {formatNumber(result.attempt_1, 1)}</span>
         <span>Próba 2: {formatNumber(result.attempt_2, 1)}</span>
         <span>Próba 3: {formatNumber(result.attempt_3, 1)}</span>
@@ -236,6 +391,7 @@ const renderSnatchDetails = (
     <div key={key} className={styles.expandDiscipline}>
       <div className={styles.expandHeader}>{label}</div>
       <div className={styles.expandMeta}>
+        <span>Miejsce: {formatInteger(result.place)}</span>
         <span>Waga kettla: {formatNumber(result.kettlebell_weight, 1)} kg</span>
         <span>Powtórzenia: {formatInteger(result.repetitions)}</span>
         <span>Punkty: {formatNumber(result.points, 2)}</span>
@@ -248,6 +404,8 @@ const CategoryPage = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
 
   const {
     data,
@@ -282,10 +440,56 @@ const CategoryPage = () => {
     });
   }, [processedResults, searchValue]);
 
-  const columns = useDisciplineColumns(data?.info, labelMap);
+  const overallColumns = useOverallColumns(data?.info, labelMap);
+
+  const disciplineTables = useMemo(() => {
+    const entries = (data?.info?.disciplines ?? []).map((code) => {
+      const label = labelMap.get(code) ?? code;
+
+      const sortedRows = [...filteredResults]
+        .sort((left, right) => {
+          const leftPlacement = getDisciplinePlacement(left, code)?.position;
+          const rightPlacement = getDisciplinePlacement(right, code)?.position;
+
+          if (leftPlacement && rightPlacement && leftPlacement !== rightPlacement) {
+            return leftPlacement - rightPlacement;
+          }
+
+          if (leftPlacement && !rightPlacement) {
+            return -1;
+          }
+
+          if (!leftPlacement && rightPlacement) {
+            return 1;
+          }
+
+          const leftPoints = left.discipline_points?.[code] ?? Number.NEGATIVE_INFINITY;
+          const rightPoints = right.discipline_points?.[code] ?? Number.NEGATIVE_INFINITY;
+
+          if (leftPoints !== rightPoints) {
+            return rightPoints - leftPoints;
+          }
+
+          return (left.player?.full_name ?? "").localeCompare(right.player?.full_name ?? "");
+        })
+        .map((row, index) => ({
+          ...row,
+          disciplineRank: getDisciplinePlacement(row, code)?.position ?? index + 1,
+        }));
+
+      return {
+        code,
+        label,
+        columns: createDisciplineColumns(code),
+        rows: sortedRows,
+      };
+    });
+
+    return entries;
+  }, [data?.info?.disciplines, filteredResults, labelMap]);
 
   const expandedRowRender = useCallback(
-    (record: CategoryOverallRow & { displayRank: number }) => {
+    (record: ProcessedCategoryRow) => {
       const disciplineBlocks = (data?.info?.disciplines ?? []).map((code) => {
         const label = labelMap.get(code) ?? code;
         switch (code) {
@@ -362,7 +566,7 @@ const CategoryPage = () => {
             placeholder="Filtruj zawodników lub klub"
             value={searchValue}
             onChange={(event) => setSearchValue(event.target.value)}
-            style={{ maxWidth: 320 }}
+            style={{ maxWidth: isMobile ? "100%" : 320 }}
           />
           <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
             Odśwież
@@ -375,7 +579,9 @@ const CategoryPage = () => {
           {info.name}
         </Title>
         <Paragraph>
-          Liczymy {info.max_counted_disciplines ? `${info.max_counted_disciplines} najlepsze wyniki` : "wszystkie konkurencje"}.
+          {info.drop_worst_result
+            ? "W klasyfikacji pomijamy najgorszy wynik zawodnika (Snatch zawsze liczony)."
+            : ""}
         </Paragraph>
         <div className={styles.disciplines}>
           {(info.disciplines_verbose ?? []).map((disc) => (
@@ -386,22 +592,52 @@ const CategoryPage = () => {
         </div>
       </div>
 
-      <div className={styles.tableCard}>
-        <div className={styles.tableTitle}>
-          <Title level={3}>Klasyfikacja</Title>
-          <Text type="secondary">Rekordy: {filteredResults.length}</Text>
-        </div>
-        <Table<CategoryOverallRow & { displayRank: number }>
-          columns={columns}
-          dataSource={filteredResults}
-          rowKey={(record) => record.id}
-          pagination={{ pageSize: 25, showSizeChanger: true }}
-          expandable={{
-            expandRowByClick: true,
-            expandedRowRender,
-          }}
-          scroll={{ x: 900 }}
-        />
+      <div className={styles.tablesStack}>
+        {SHOW_GENERAL_CLASSIFICATION && (
+          <div className={styles.tableCard}>
+            <div className={styles.tableTitle}>
+              <Title level={3}>Klasyfikacja generalna</Title>
+            </div>
+            <Table<ProcessedCategoryRow>
+              columns={overallColumns}
+              dataSource={filteredResults}
+              rowKey={(record) => record.id}
+              pagination={
+                isMobile
+                  ? { pageSize: 15, showSizeChanger: false }
+                  : { pageSize: 25, showSizeChanger: true }
+              }
+              expandable={{
+                expandRowByClick: true,
+                expandedRowRender,
+              }}
+              size={isMobile ? "small" : "middle"}
+              scroll={isMobile ? { x: "max-content" } : { x: "max-content" }}
+              sticky={{ offsetHeader: isMobile ? 72 : 88 }}
+            />
+          </div>
+        )}
+
+        {disciplineTables.map((table) => (
+          <div key={table.code} className={styles.tableCard}>
+            <div className={styles.tableTitle}>
+              <Title level={3}>Wyniki · {table.label}</Title>
+            </div>
+            <Table<DisciplineRow>
+              columns={table.columns}
+              dataSource={table.rows}
+              rowKey={(record) => `${table.code}-${record.id}`}
+              pagination={
+                isMobile
+                  ? { pageSize: 15, showSizeChanger: false }
+                  : { pageSize: 25, showSizeChanger: true }
+              }
+              size={isMobile ? "small" : "middle"}
+              scroll={isMobile ? { x: "max-content" } : { x: "max-content" }}
+              sticky={{ offsetHeader: isMobile ? 72 : 88 }}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
