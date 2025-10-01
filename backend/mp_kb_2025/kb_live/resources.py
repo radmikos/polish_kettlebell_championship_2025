@@ -142,8 +142,13 @@ class PlayerImportResource(PlayerResource):
                 category_names.add(category)
         return club_names, category_names
 
-    def before_import(self, dataset, using_transactions, dry_run, **kwargs):
-        super().before_import(dataset, using_transactions, dry_run, **kwargs)
+    def before_import(self, dataset, using_transactions=None, dry_run=None, **kwargs):
+        super().before_import(
+            dataset,
+            using_transactions=using_transactions,
+            dry_run=dry_run,
+            **kwargs,
+        )
         club_names, category_names = self._collect_unique_related_values(dataset)
         if club_names:
             existing = SportClub.objects.in_bulk(club_names, field_name="name")
