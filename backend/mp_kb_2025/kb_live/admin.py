@@ -260,6 +260,7 @@ class PullUpResultAdmin(_AttemptsResultAdmin):
 # Overall category results
 @admin.register(CategoryOverallResult)
 class CategoryOverallResultAdmin(admin.ModelAdmin):
+    CATEGORY_FILTER_PARAM = "category__id__exact"
     DISCIPLINE_POINTS_FIELDS = {
         Discipline.SNATCH: "snatch_points",
         Discipline.TGU: "tgu_points",
@@ -276,6 +277,7 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         Discipline.PISTOL,
         Discipline.PULL_UP,
     ]
+    change_list_template = "admin/kb_live/categoryoverallresult/change_list.html"
     # Kolumny w żądanej kolejności: Zawodnik, Kategorie, punkty z konkurencji, suma, miejsce
     list_display = (
         "player_link",
@@ -298,7 +300,6 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "final_position_disp",
     )
     list_display_links = ("category_disp",)
-    list_filter = ("category",)
     search_fields = ("player__surname", "player__name", "category__name")
     autocomplete_fields = ("player", "category")
     readonly_fields = (
@@ -328,7 +329,25 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.select_related("player", "player__club", "category").prefetch_related("player__categories")
+        qs = qs.select_related("player", "player__club", "category").prefetch_related("player__categories")
+        category_filter_value = request.GET.get(self.CATEGORY_FILTER_PARAM)
+        if category_filter_value:
+            qs = qs.filter(category_id=category_filter_value)
+        return qs
+
+    def changelist_view(self, request, extra_context=None):
+        category_choices = Category.objects.order_by("name")
+        selected_category = request.GET.get(self.CATEGORY_FILTER_PARAM, "")
+
+        extra_context = extra_context or {}
+        extra_context.update(
+            {
+                "category_filter_choices": category_choices,
+                "selected_category_filter": selected_category,
+                "category_filter_param_name": self.CATEGORY_FILTER_PARAM,
+            }
+        )
+        return super().changelist_view(request, extra_context=extra_context)
 
     @admin.display(description=_("Zawodnik"), ordering="player__surname")
     def player_link(self, obj: CategoryOverallResult):
