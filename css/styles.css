@@ -1,131 +1,172 @@
-:root {
-  --color-background: #000003;
-  --color-card: 303333 (31, 41, 55, 0.8);
-  --color-border: #000003;
-  --color-text: #d1d5db;
-  --color-text-label: #9ca3af;
-  --color-primary: #f97316;
-  --color-primary-hover: #ea580c;
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
-}
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600&display=swap");
+@import url("../shared/styles/tokens.css");
 
-* {
+/* Sekcja: Reset bazowy - elementy globalne */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-body {
-  font-family: var(--font-family);
-  background-color: var(--color-background);
-  color: var(--color-text);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
+/* Sekcja: Layout bazowy - kontenery kolumnowe */
+body,
 .main-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  max-width: 800px;
+  gap: 1.5rem;
 }
 
+/* Sekcja: Tło strony głównej */
+body {
+  font-family: var(--font-ui);
+  background: #ff0000;
+  color: var(--color-text-secondary);
+  min-height: 100vh;
+  padding: 1.5rem;
+  color-scheme: dark;
+}
+
+/* Sekcja: Główny kontener treści */
+.main-container {
+  width: min(100%, 860px);
+}
+
+/* Sekcja: Oprawa graficzna - kontener */
 .image-container {
   text-align: center;
-  background-color: transparent;
 }
 
+/* Sekcja: Oprawa graficzna - obraz */
 .image-container img {
   max-width: 100%;
   height: auto;
 }
 
+/* Sekcja: Karta informacji - kontener */
 .info-container {
   width: 100%;
-  padding: 1.5rem;
+  padding: 2rem;
   text-align: center;
-  background-color: var(--color-card);
+  background: var(--color-bg-panel);
   border: 1px solid var(--color-border);
-  border-radius: 10px;
-  margin-top: 1rem;
+  border-radius: var(--radius-md);
+  --info-heading-size: clamp(2.2rem, 5vw, 3.1rem);
+  --info-heading-spacing: 1.4px;
+  --info-copy-size: 1.05rem;
+  --info-copy-line-height: 1.6;
+  --info-copy-margin: 1.75rem;
 }
 
+/* Sekcja: Karta informacji - nagłówek */
 .info-container h1 {
-  font-size: 2rem;
-  font-weight: bold;
-  color: var(--color-primary);
-  margin-bottom: 0.5rem;
+  font-family: var(--font-heading);
+  font-size: var(--info-heading-size);
+  font-weight: 600;
+  letter-spacing: var(--info-heading-spacing);
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
 }
 
+/* Sekcja: Karta informacji - akapit */
 .info-container p {
-  font-size: 1rem;
-  color: var(--color-text-label);
-  margin-bottom: 1.5rem;
+  font-family: var(--font-text);
+  font-size: var(--info-copy-size);
+  color: var(--color-text-secondary);
+  line-height: var(--info-copy-line-height);
+  margin-bottom: var(--info-copy-margin);
 }
 
+/* Sekcja: Media społecznościowe - wrapper ikon */
 .icons-social {
   display: flex;
   justify-content: center;
   gap: 1.5rem;
+  --social-icon-size: 2.5rem;
 }
 
+/* Sekcja: Media społecznościowe - link podstawowy */
 .icons-social a {
-  color: var(--color-text);
-  transition: color 0.2s;
-  font-size: 2.5rem;
+  color: var(--color-text-primary);
+  font-size: var(--social-icon-size);
+  transition: color var(--transition-base), transform var(--transition-base);
 }
 
-.icons-social a:hover {
-  color: var(--color-primary);
+/* Sekcja: Media społecznościowe - interakcje */
+.icons-social a:is(:hover, :focus-visible) {
+  color: var(--color-link);
+  transform: translateY(-4px);
 }
 
-/* --- Stopka --- */
+/* Sekcja: Stopka - kontener */
 footer {
-  font-size: 0.8rem;
-  color: var(--color-text-label);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
   text-align: center;
-  margin-top: 1rem;
 }
 
+/* Sekcja: Stopka - link podstawowy */
 footer a {
-  color: var(--color-primary);
+  color: var(--color-link);
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 600;
+  transition: color var(--transition-base);
 }
 
-footer a:hover {
-  text-decoration: underline;
+/* Sekcja: Stopka - interakcje */
+footer a:is(:hover, :focus-visible) {
+  color: var(--color-link-hover);
 }
 
+/* Sekcja: Widok mobilny */
 @media (max-width: 600px) {
+  /* Sekcja mobilna: Tło strony */
+  body {
+    padding:
+      calc(env(safe-area-inset-top, 0px) + 1rem)
+      clamp(0.9rem, 5vw, 1.2rem)
+      calc(env(safe-area-inset-bottom, 0px) + 1.25rem);
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 1.25rem;
+  }
+
+  /* Sekcja mobilna: Karta informacji i jej typografia */
   .info-container {
-    padding: 1rem;
+    padding: clamp(1.3rem, 5vw, 1.6rem);
+    --info-heading-size: clamp(1.8rem, 8vw, 2.2rem);
+    --info-copy-size: 0.95rem;
+    --info-copy-margin: 1.15rem;
   }
 
-  .info-container h1 {
-    font-size: 1.5rem;
-  }
-
-  .info-container p {
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-
-  .icons-social a {
-    font-size: 2rem;
-  }
-
+  /* Sekcja mobilna: Wrapper ikon społecznościowych */
   .icons-social {
     gap: 1rem;
+    --social-icon-size: 2.2rem;
   }
+
+  /* Sekcja mobilna: Główny kontener */
   .main-container {
-    padding: 0 0.5rem;
+    width: 100%;
+    gap: 1.3rem;
+  }
+}
+
+/* Sekcja: Widok bardzo mobilny */
+@media (max-width: 420px) {
+  /* Sekcja bardzo mobilna: Karta informacji i typografia */
+  .info-container {
+    padding: 1.15rem;
+    --info-heading-spacing: 1.1px;
+    --info-copy-size: 0.92rem;
+    --info-copy-line-height: 1.5;
+  }
+
+  /* Sekcja bardzo mobilna: Wrapper ikon społecznościowych */
+  .icons-social {
+    --social-icon-size: 2rem;
   }
 }

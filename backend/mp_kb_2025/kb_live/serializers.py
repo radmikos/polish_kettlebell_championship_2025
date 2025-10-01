@@ -37,7 +37,7 @@ class CategoryBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ("id", "name", "disciplines", "disciplines_verbose", "max_counted_disciplines")
+        fields = ("id", "name", "disciplines", "disciplines_verbose", "drop_worst_result")
         read_only_fields = fields
 
     def get_disciplines_verbose(self, obj: Category) -> list[dict[str, str]]:
@@ -106,6 +106,7 @@ class PlayerDetailSerializer(PlayerSummarySerializer):
             "attempt_3": result.attempt_3,
             "best_attempt": getattr(result, "best_attempt", None),
             "points": getattr(result, "points", None),
+            "place": getattr(result, "place", None),
         }
         return data
 
@@ -116,6 +117,7 @@ class PlayerDetailSerializer(PlayerSummarySerializer):
             "kettlebell_weight": result.kettlebell_weight,
             "repetitions": result.repetitions,
             "points": getattr(result, "points", None),
+            "place": getattr(result, "place", None),
         }
 
     def get_snatch_result(self, obj: Player):
@@ -146,6 +148,15 @@ class PlayerDetailSerializer(PlayerSummarySerializer):
                     "category": CategoryNestedSerializer(row.category).data,
                     "final_position": row.final_position,
                     "total_points": row.total_points,
+                    "discipline_places": {
+                        "snatch": row.snatch_place,
+                        "tgu": row.tgu_place,
+                        "squat": row.squat_place,
+                        "see_saw_press": row.see_saw_press_place,
+                        "pistol": row.pistol_place,
+                        "pull_up": row.pull_up_place,
+                    },
+                    "placement_points": row.placement_points,
                     "counted_disciplines": row.counted_disciplines,
                     "tiebreak_points": row.tiebreak_points,
                     "discipline_points": {
@@ -165,6 +176,7 @@ class SnatchResultSerializer(serializers.Serializer):
     kettlebell_weight = serializers.FloatField(allow_null=True)
     repetitions = serializers.IntegerField(allow_null=True)
     points = serializers.FloatField(allow_null=True)
+    place = serializers.IntegerField(allow_null=True)
 
 
 class AttemptsResultSerializer(serializers.Serializer):
@@ -173,6 +185,7 @@ class AttemptsResultSerializer(serializers.Serializer):
     attempt_3 = serializers.FloatField(allow_null=True)
     best_attempt = serializers.FloatField(allow_null=True)
     points = serializers.FloatField(allow_null=True)
+    place = serializers.IntegerField(allow_null=True)
 
 
 class CategoryPlacementSerializer(serializers.ModelSerializer):
@@ -219,6 +232,7 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
     pistol_result = serializers.SerializerMethodField()
     pull_up_result = serializers.SerializerMethodField()
     discipline_points = serializers.SerializerMethodField()
+    discipline_places = serializers.SerializerMethodField()
     placements = serializers.SerializerMethodField()
     tiebreak_applied = serializers.SerializerMethodField()
 
@@ -229,6 +243,8 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
             "player",
             "final_position",
             "total_points",
+            "discipline_places",
+            "placement_points",
             "counted_disciplines",
             "tiebreak_points",
             "tiebreak_applied",
@@ -277,6 +293,16 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
             "see_saw_press": overall.see_saw_press_points,
             "pistol": overall.pistol_points,
             "pull_up": overall.pull_up_points,
+        }
+
+    def get_discipline_places(self, overall: CategoryOverallResult) -> dict[str, int | None]:
+        return {
+            "snatch": overall.snatch_place,
+            "tgu": overall.tgu_place,
+            "squat": overall.squat_place,
+            "see_saw_press": overall.see_saw_press_place,
+            "pistol": overall.pistol_place,
+            "pull_up": overall.pull_up_place,
         }
 
     def get_tiebreak_applied(self, overall: CategoryOverallResult) -> bool:

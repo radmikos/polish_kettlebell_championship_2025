@@ -50,7 +50,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
                 "player__pistol_result",
                 "player__pull_up_result",
             )
-            .order_by("final_position", "total_points", "player__surname", "player__name")
+            .order_by("final_position", "placement_points", "-total_points", "player__surname", "player__name")
         )
 
         placements_qs = (

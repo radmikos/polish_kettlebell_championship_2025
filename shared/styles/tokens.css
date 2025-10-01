@@ -1,0 +1,87 @@
+/* Design system tokens: kolory, cienie, promienie i fonty */
+:root {
+  /* Bazowe powierzchnie */
+  --color-surface-950: #0D0D0D; /* kolor tła aplikacji */
+  --color-surface-940: #ec1212;
+  --color-surface-900: #d7620e;  /* kolor kart z kategorii*/
+  --color-surface-870: #696969;
+  --color-surface-880: #d5a919;
+  --color-surface-860: #6a7487;
+  --color-surface-855: #4810efe3;
+  --color-surface-840: #1f66d1;
+  --color-surface-830: #595959;
+  --color-surface-820: #81c316;
+  --color-surface-780: #6b6f1f;
+  --color-surface-760: #b1350c;
+  --color-surface-720: #000000;
+  --color-surface-overlay: #88a7d9;
+
+  /* Kolory semantyczne */
+  --color-primary: #0bb6ff;
+  --color-primary-hover: #1d5a76;
+  --color-link: #38bdf8;
+  --color-link-hover: #0ea5e9;
+  --color-success: #4ade80;
+  --color-warning: #facc15;
+  --color-error: #ef4444;
+  --color-error-soft: #f87171;
+
+  /* Neutralne */
+  --color-border-primary: #FFC857; /* kolor obramowania kart z kategoriami */
+  --color-border-strong: #303b4d;
+  --color-border-muted: #475569;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #ffffff;
+  --color-text-base: #ffffff;
+  --color-text-contrast: #0f172a;
+  --color-neutral-050: #c6106b;
+  --color-neutral-700: #374151;
+  --color-white: #22c55e;
+  --color-black: #000000;
+
+  /* Kolory narzędziowe (kalkulator) */
+  --color-calc-background: #1f2937;
+  --color-calc-card: #1f2937;
+
+  /* Kolory tabel kategorii */
+  --color-category-table-bg: #ff0000;
+  --color-category-table-header-bg: #ff7fbd;
+  --color-category-table-row-hover-bg: #ff3333;
+
+
+
+  /* Fonty */
+  --font-heading: "Bebas Neue", sans-serif;
+  --font-body: "Oswald", sans-serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
+  --font-family-default: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+
+  /* Cienie i efekty */
+  --color-shadow-soft-rgb: 4, 9, 20;
+  --color-shadow-hard-rgb: 5, 12, 27;
+  --shadow-soft: none;
+  --shadow-hard: none;
+  --shadow-calc-card: none;
+  --card-shadow: none;
+
+  /* Wysokości i szerokości layoutu */
+  --layout-max-width: 1600px;
+  --header-height: 64px;
+
+  /* Alias dla dotychczasowych nazw (zgodność wsteczna) */
+  --color-bg-page: var(--color-surface-950);
+  --color-bg-panel: var(--color-surface-900);
+  --color-bg-panel-soft: var(--color-surface-950);
+  --color-bg-panel-strong: var(--color-surface-940);
+  --color-border: var(--color-border-primary);
+  --color-text: var(--color-text-primary);
+  --color-background: var(--color-surface-950);
+  --color-card: var(--color-calc-card);
+  --color-text-label: var(--color-text-secondary);
+  --color-text-inverse: var(--color-text-contrast);
+  --font-text: var(--font-body);
+  --font-family: var(--font-family-default);
+
+}

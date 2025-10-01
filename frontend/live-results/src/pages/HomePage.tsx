@@ -17,12 +17,12 @@ interface GroupConfig {
 }
 
 const groupConfig: GroupConfig[] = [
-  { key: "junior", title: "Junior & Youth", keywords: ["junior", "u16", "u18", "u19", "młodzież", "youth"] },
+  { key: "junior", title: "Junior", keywords: ["junior", "u16", "u18", "u19", "młodzież", "youth"] },
   { key: "amateur", title: "Amator", keywords: ["amator", "amateur", "open"] },
-  { key: "pro", title: "Zawodowcy", keywords: ["pro", "elita", "elite", "professional"] },
+  { key: "pro", title: "Pro", keywords: ["pro", "elita", "elite", "professional"] },
   { key: "masters", title: "Masters", keywords: ["master", "masters", "veteran"] },
-  { key: "open", title: "Open / Ogólne", keywords: ["open", "najleps", "best", "mix"] },
-  { key: "other", title: "Pozostałe kategorie", keywords: [] },
+  { key: "open", title: "Open", keywords: ["open", "najleps", "best", "mix"] },
+  { key: "other", title: "Kategorie dodatkowe", keywords: [] },
 ];
 
 const fetchCategories = async (): Promise<CategorySummary[]> => {
@@ -42,10 +42,10 @@ const formatSecondaryName = (name: string): string | null => {
 };
 
 const buildMetaDescription = (category: CategorySummary): string => {
-  if (category.max_counted_disciplines && category.max_counted_disciplines > 0) {
-    return `Liczone najlepsze ${category.max_counted_disciplines} konkurencje`;
+  if (category.drop_worst_result) {
+    return "";
   }
-  return "Liczymy wszystkie starty";
+  return "";
 };
 
 const assignGroup = (name: string): GroupKey => {
@@ -117,12 +117,9 @@ const HomePage = () => {
   return (
     <div className={styles.homePage}>
       <header className={styles.header}>
-        <Title level={1}>Wyniki na żywo</Title>
-        <Paragraph className={styles.intro}>
-          Śledź na bieżąco rezultaty Mistrzostw Polski Kettlebell 2025. Wybierz
-          kategorię, aby zobaczyć aktualne klasyfikacje, punkty dyscyplin oraz
-          dogrywki.
-        </Paragraph>
+        <Title level={1} className={styles.pageTitle}>
+          Wyniki na żywo
+        </Title>
         {isFetching && <Text>Odświeżamy dane…</Text>}
       </header>
 

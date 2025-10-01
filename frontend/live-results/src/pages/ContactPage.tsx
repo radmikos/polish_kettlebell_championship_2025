@@ -21,7 +21,7 @@ const ContactPage = () => {
         <div className={styles.contactGrid}>
           <div className={styles.contactItem}>
             <span className={styles.label}>Biuro zawodów</span>
-            <span className={styles.value}>+48 600 123 456</span>
+            <span className={styles.value}>+48 12345232</span>
           </div>
           <div className={styles.contactItem}>
             <span className={styles.label}>E-mail</span>
@@ -36,7 +36,8 @@ const ContactPage = () => {
           <div className={styles.contactItem}>
             <span className={styles.label}>Adres hali</span>
             <span className={styles.value}>
-              Hala Słoneczna, ul. Sportowa 12, Ząbkowice Śląskie
+              Hala Widowiskowo-Sportowa w Bochni, 
+              Księcia Józefa Poniatowskiego 32, 32-700 Bochnia
             </span>
           </div>
         </div>
@@ -54,7 +55,7 @@ const ContactPage = () => {
         <Divider />
         <Paragraph>
           Oficjalne komunikaty znajdziesz na profilu społecznościowym klubu
-          organizatora oraz na stronie federacji Hardstyle Kettlebell Poland.
+          organizatora.
         </Paragraph>
       </div>
     </div>

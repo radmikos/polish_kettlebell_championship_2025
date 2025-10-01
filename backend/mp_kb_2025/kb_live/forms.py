@@ -14,23 +14,22 @@ class CategoryForm(forms.ModelForm):
         required=False,
         help_text="Zaznacz konkurencje dostępne w tej kategorii.",
     )
-    max_counted_disciplines = forms.IntegerField(
-        label=_("Liczba punktowanych konkurencji"),
+    drop_worst_result = forms.BooleanField(
+        label=_("Odrzucić najgorszy wynik"),
         required=False,
-        min_value=1,
-        help_text=_("Podaj ile najlepszych wyników ma liczyć się do sumy miejsc. Pozostaw puste aby liczyć wszystkie."),
+        help_text=_("Jeśli zaznaczysz, najgorszy wynik zawodnika (poza Snatch) nie będzie liczony."),
     )
 
     class Meta:
         model = Category
-        fields = ["name", "disciplines", "max_counted_disciplines"]
+        fields = ["name", "disciplines", "drop_worst_result"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk and isinstance(self.instance.disciplines, list):
             self.fields["disciplines"].initial = self.instance.disciplines
         if self.instance and self.instance.pk:
-            self.fields["max_counted_disciplines"].initial = self.instance.max_counted_disciplines
+            self.fields["drop_worst_result"].initial = bool(self.instance.drop_worst_result)
 
     def clean_disciplines(self):
         selected = self.cleaned_data.get("disciplines") or []
@@ -39,25 +38,6 @@ class CategoryForm(forms.ModelForm):
         if invalid:
             raise ValidationError(f"Nieprawidłowe dyscypliny: {', '.join(invalid)}")
         return sorted(selected)
-
-    def clean_max_counted_disciplines(self):
-        value = self.cleaned_data.get("max_counted_disciplines")
-        if value is None:
-            return None
-        if value <= 0:
-            raise ValidationError(_("Wartość musi być dodatnia."))
-        return value
-
-    def clean(self):
-        cleaned_data = super().clean()
-        limit = cleaned_data.get("max_counted_disciplines")
-        disciplines = cleaned_data.get("disciplines") or []
-        if limit is not None and disciplines and limit > len(disciplines):
-            self.add_error(
-                "max_counted_disciplines",
-                _("Liczba punktowanych konkurencji nie może przekraczać liczby dyscyplin w kategorii."),
-            )
-        return cleaned_data
 
 
 class CategoryPlacementForm(forms.ModelForm):

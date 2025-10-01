@@ -1,8 +1,8 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from kb_live.models import Category, CategoryOverallResult, CategoryPlacement, Discipline
-from kb_live.services.ranking import rank_category_overall
+from kb_live.models import Category, CategoryOverallResult, Discipline, Player
+from kb_live.services.ranking import rank_category_disciplines, rank_category_overall
 
 
 class Command(BaseCommand):
@@ -21,25 +21,28 @@ class Command(BaseCommand):
         except Category.DoesNotExist:
             raise CommandError(f"Brak kategorii id={cat_id}")
 
-        qs = CategoryPlacement.objects.filter(category=category, discipline=disc).select_related("player", "category")
-        rows = list(qs)
-        rows.sort(key=lambda r: (r.points or -1e18), reverse=True)
+        rows = list(
+            category.placements.filter(discipline=disc).select_related("player", "category")
+        )
 
         with transaction.atomic():
-            for i, r in enumerate(rows, start=1):
-                r.position = i if r.points is not None else None
-            CategoryPlacement.objects.bulk_update(rows, ["position"])
-
-            player_map = {r.player_id: r.player for r in rows if r.player_id}
-            if player_map:
+            affected_players = rank_category_disciplines(category.pk, disciplines=[disc])
+            player_ids = {r.player_id for r in rows if r.player_id} | affected_players
+            if player_ids:
+                player_lookup = {
+                    p.pk: p for p in Player.objects.filter(pk__in=player_ids)
+                }
                 existing_overalls = {
                     obj.player_id: obj
                     for obj in CategoryOverallResult.objects.filter(
-                        category=category, player_id__in=player_map.keys()
+                        category=category, player_id__in=player_ids
                     ).select_related("player", "category")
                 }
 
-                for player_id, player in player_map.items():
+                for player_id in player_ids:
+                    player = player_lookup.get(player_id)
+                    if player is None:
+                        continue
                     overall = existing_overalls.get(player_id)
                     if overall is None:
                         overall, _ = CategoryOverallResult.objects.get_or_create(player=player, category=category)
@@ -49,7 +52,8 @@ class Command(BaseCommand):
                         overall.category = category
                     overall.recompute(save=True)
 
-            rank_category_overall(category.pk)
+            # Po zmianach miejsc w tej konkurencji warto przeliczyć wyniki overall
+            rank_category_overall(category.pk, recompute_disciplines=False)
 
         self.stdout.write(
             self.style.SUCCESS(f"Nadano miejsca: kategoria='{category.name}', konkurencja='{disc}', n={len(rows)}")
