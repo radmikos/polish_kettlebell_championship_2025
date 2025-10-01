@@ -300,6 +300,7 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "final_position_disp",
     )
     list_display_links = ("category_disp",)
+    list_filter = ("category",)
     search_fields = ("player__surname", "player__name", "category__name")
     autocomplete_fields = ("player", "category")
     readonly_fields = (
