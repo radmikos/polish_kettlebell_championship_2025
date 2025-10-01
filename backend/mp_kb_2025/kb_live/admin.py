@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import admin
-from django.db.models import Q, F, FloatField, ExpressionWrapper
+from django.db.models import Q, F, FloatField, ExpressionWrapper, Case, When, Value
 from django.db.models.functions import Greatest
 
 from .forms import CategoryPlacementForm
@@ -155,10 +155,15 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         # annotate with kettlebell_weight as best_attempt_value and percent BW
+        percent_ratio = ExpressionWrapper(
+            F("kettlebell_weight") * 1.0 / F("player__weight"), output_field=FloatField()
+        )
         qs = qs.select_related("player").annotate(
             best_attempt_value=F("kettlebell_weight"),
-            percent_bw_value=ExpressionWrapper(
-                F("kettlebell_weight") * 1.0 / F("player__weight"), output_field=FloatField()
+            percent_bw_value=Case(
+                When(player__weight__gt=0, then=percent_ratio),
+                default=Value(None),
+                output_field=FloatField(),
             ),
         )
         return qs
@@ -202,9 +207,17 @@ class _AttemptsResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixi
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         # annotate greatest of attempts as best_attempt_value and percent of BW
+        best_attempt_expr = Greatest(*self.attempts_fields)
+        percent_ratio = ExpressionWrapper(
+            best_attempt_expr * 1.0 / F("player__weight"), output_field=FloatField()
+        )
         qs = qs.select_related("player").annotate(
-            best_attempt_value=Greatest(*self.attempts_fields),
-            percent_bw_value=ExpressionWrapper(F("best_attempt_value") * 1.0 / F("player__weight"), output_field=FloatField()),
+            best_attempt_value=best_attempt_expr,
+            percent_bw_value=Case(
+                When(player__weight__gt=0, then=percent_ratio),
+                default=Value(None),
+                output_field=FloatField(),
+            ),
         )
         return qs
 
