@@ -31,9 +31,8 @@ type CategoryQueryResponse = {
   results: CategoryResultsResponse;
 };
 
-// let SHOW_GENERAL_CLASSIFICATION = true;
-// Odkomentuj poniższą linię, aby ukryć klasyfikację generalną na potrzeby testów lub prezentacji.
-let SHOW_GENERAL_CLASSIFICATION = false;
+// KLASYFIKACJA GENERALNA W KATEGORIACH
+let SHOW_GENERAL_CLASSIFICATION = true;
 
 type ProcessedCategoryRow = CategoryOverallRow & { displayRank: number };
 type DisciplineRow = ProcessedCategoryRow & { disciplineRank: number };
