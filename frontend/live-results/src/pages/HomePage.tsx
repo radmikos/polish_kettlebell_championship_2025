@@ -19,10 +19,10 @@ interface GroupConfig {
 const groupConfig: GroupConfig[] = [
   { key: "junior", title: "Junior", keywords: ["junior", "u16", "u18", "u19", "młodzież", "youth"] },
   { key: "amateur", title: "Amator", keywords: ["amator", "amateur", "open"] },
-  { key: "pro", title: "Zawodowcy", keywords: ["pro", "elita", "elite", "professional"] },
+  { key: "pro", title: "Pro", keywords: ["pro", "elita", "elite", "professional"] },
   { key: "masters", title: "Masters", keywords: ["master", "masters", "veteran"] },
-  { key: "open", title: "Open / Ogólne", keywords: ["open", "najleps", "best", "mix"] },
-  { key: "other", title: "Pozostałe kategorie", keywords: [] },
+  { key: "open", title: "Open", keywords: ["open", "najleps", "best", "mix"] },
+  { key: "other", title: "Kategorie dodatkowe", keywords: [] },
 ];
 
 const fetchCategories = async (): Promise<CategorySummary[]> => {
@@ -117,7 +117,9 @@ const HomePage = () => {
   return (
     <div className={styles.homePage}>
       <header className={styles.header}>
-        <Title level={1}>Wyniki na żywo</Title>
+        <Title level={1} className={styles.pageTitle}>
+          Wyniki na żywo
+        </Title>
         {isFetching && <Text>Odświeżamy dane…</Text>}
       </header>
 
