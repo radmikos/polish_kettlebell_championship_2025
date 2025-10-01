@@ -582,7 +582,7 @@ const CategoryPage = () => {
         <Paragraph>
           {info.drop_worst_result
             ? "W klasyfikacji pomijamy najgorszy wynik zawodnika (Snatch zawsze liczony)."
-            : "Liczymy wszystkie konkurencje."}
+            : ""}
         </Paragraph>
         <div className={styles.disciplines}>
           {(info.disciplines_verbose ?? []).map((disc) => (
