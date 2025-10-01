@@ -96,8 +96,11 @@ class PlayerResource(resources.ModelResource):
         import_id_fields = ("id",)
 
 class PlayerImportResource(PlayerResource):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        # Django-import-export passes request/form via kwargs; store them for potential future use
+        self.request = kwargs.pop("request", None)
+        self.form = kwargs.pop("form", None)
+        super().__init__(*args, **kwargs)
         self._club_cache = {}
         self._category_cache = {}
         normalizer = self._normalize_value
