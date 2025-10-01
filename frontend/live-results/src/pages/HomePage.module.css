@@ -47,8 +47,9 @@
 }
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.5rem;
+  width: 100%;
 }
 
 .categoryLink {
@@ -179,30 +180,24 @@
     padding: 0.5rem 0;
   }
 
+  .categorySection {
+    padding-inline: 0.75rem;
+  }
+
   .sectionTitle {
-    margin-top: 2rem;
-    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
   }
 
   .cards {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(250px, 85vw);
-    overflow-x: auto;
-    gap: 1rem;
-    padding-bottom: 0.5rem;
-    margin: 0 -0.5rem;
-    padding-inline: 0.5rem;
-    scroll-snap-type: x mandatory;
-  }
-
-  .cards::-webkit-scrollbar {
-    display: none;
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+    margin: 0;
   }
 
   .categoryCard {
-    scroll-snap-align: start;
-    min-height: 190px;
+    min-height: 180px;
+    padding: 1.1rem;
   }
 
   .meta {
@@ -212,29 +207,29 @@
 
 @media (max-width: 460px) {
   .sectionTitle {
-    padding-bottom: 0.4rem;
-    font-size: clamp(1.5rem, 8vw, 2rem);
+    padding-bottom: 0.35rem;
+    font-size: clamp(1.5rem, 7.5vw, 1.95rem);
   }
 
   .cards {
-    grid-auto-columns: minmax(230px, 88vw);
+    gap: 0.9rem;
   }
 
   .categoryCard {
-    padding: 1.15rem;
-    gap: 0.65rem;
+    padding: 1rem;
+    gap: 0.6rem;
   }
 
   .categoryName {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
   }
 
   .secondaryName {
-    font-size: 1rem;
+    font-size: 0.98rem;
   }
 
   .disciplineTag {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     letter-spacing: 0.04em;
   }
 }
