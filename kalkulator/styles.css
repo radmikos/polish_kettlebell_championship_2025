@@ -1,7 +1,7 @@
 /* --- GLOBAL STYLES & CSS VARIABLES --- */
 :root {
   --color-background: #111827; /* Dark gray-blue */
-  --color-card: rgba(31, 41, 55, 0.8); /* Semi-transparent dark blue */
+  --color-card: #1f2937; /* Solid dark blue */
   --color-border: #4b5563; /* Gray */
   --color-text: #d1d5db; /* Light gray */
   --color-text-label: #9ca3af; /* Medium gray */
@@ -29,7 +29,6 @@ body {
   justify-content: center;
   min-height: 100vh;
   padding: 1rem;
-  background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
 }
 
 /* --- CALCULATOR CARD STYLING --- */
@@ -37,11 +36,9 @@ body {
   width: 100%;
   max-width: 500px;
   background-color: var(--color-card);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--color-border);
   border-radius: 1rem;
   padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .card-header {
@@ -81,13 +78,12 @@ body {
   border-radius: 0.5rem;
   color: var(--color-text);
   font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s;
 }
 
 .form-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
 }
 
 /* --- SPECIFIC COMPONENTS --- */
