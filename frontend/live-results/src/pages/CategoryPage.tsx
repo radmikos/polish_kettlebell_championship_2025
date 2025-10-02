@@ -26,6 +26,7 @@ import {
   DisciplineLabel,
   AttemptsResult,
   SnatchResult,
+  PlayerSummary,
 } from "../types";
 import type { GlobalToken } from "antd/es/theme/interface";
 import { layoutConstants } from "../theme";
@@ -143,6 +144,35 @@ const computePercentBw = (row: CategoryOverallRow, code: string): number | null 
   return null;
 };
 
+const getSurnameFirstValue = (player: PlayerSummary | null | undefined): string => {
+  const surname = (player?.surname ?? "").trim();
+  const name = (player?.name ?? "").trim();
+  const combined = `${surname} ${name}`.trim();
+  if (combined) {
+    return combined;
+  }
+  return (player?.full_name ?? "").trim();
+};
+
+const getSurnameFirstDisplay = (player: PlayerSummary | null | undefined): string => {
+  const display = getSurnameFirstValue(player);
+  return display || "-";
+};
+
+const comparePlayersBySurname = (
+  left: PlayerSummary | null | undefined,
+  right: PlayerSummary | null | undefined,
+): number => {
+  const leftKey = getSurnameFirstValue(left);
+  const rightKey = getSurnameFirstValue(right);
+  const primary = leftKey.localeCompare(rightKey, "pl", { sensitivity: "accent" });
+  if (primary !== 0) {
+    return primary;
+  }
+
+  return (left?.full_name ?? "").localeCompare(right?.full_name ?? "", "pl", { sensitivity: "accent" });
+};
+
 const fetchCategory = async (categoryId: string | undefined): Promise<CategoryQueryResponse> => {
   if (!categoryId) {
     throw new Error("Identyfikator kategorii jest wymagany");
@@ -162,7 +192,7 @@ const fetchCategory = async (categoryId: string | undefined): Promise<CategoryQu
     const rightPlacement = b.placement_points ?? Number.MAX_SAFE_INTEGER;
     if (leftPlacement !== rightPlacement) return leftPlacement - rightPlacement;
 
-    return (a.player?.full_name ?? '').localeCompare(b.player?.full_name ?? '');
+    return comparePlayersBySurname(a.player, b.player);
   });
 
   return {
@@ -186,12 +216,11 @@ const useOverallColumns = (
       render: (_value, record) => record.displayRank ?? "-",
     },
     {
-      title: "Imię i nazwisko",
+      title: "Nazwisko i imię",
       dataIndex: ["player", "full_name"],
       key: "athlete",
-      render: (_value, record) => record.player?.full_name ?? "-",
-      sorter: (a, b) =>
-        (a.player?.full_name ?? "").localeCompare(b.player?.full_name ?? ""),
+      render: (_value, record) => getSurnameFirstDisplay(record.player),
+      sorter: (a, b) => comparePlayersBySurname(a.player, b.player),
       ellipsis: true,
     },
     {
@@ -270,12 +299,11 @@ const createDisciplineColumns = (code: string): ColumnsType<DisciplineRow> => {
       },
     },
     {
-      title: "Imię i nazwisko",
+      title: "Nazwisko i imię",
       dataIndex: ["player", "full_name"],
       key: `${code}-athlete`,
-      render: (_value, record) => record.player?.full_name ?? "-",
-      sorter: (a, b) =>
-        (a.player?.full_name ?? "").localeCompare(b.player?.full_name ?? ""),
+      render: (_value, record) => getSurnameFirstDisplay(record.player),
+      sorter: (a, b) => comparePlayersBySurname(a.player, b.player),
       ellipsis: true,
     },
     {
@@ -485,7 +513,8 @@ const CategoryPage = () => {
     return processedResults.filter((row) => {
       const fullName = row.player?.full_name?.toLowerCase() ?? "";
       const clubName = row.player?.club?.name?.toLowerCase() ?? "";
-      return fullName.includes(term) || clubName.includes(term);
+      const surnameFirst = getSurnameFirstValue(row.player).toLowerCase();
+      return fullName.includes(term) || surnameFirst.includes(term) || clubName.includes(term);
     });
   }, [processedResults, searchValue]);
 
@@ -519,7 +548,7 @@ const CategoryPage = () => {
             return rightPoints - leftPoints;
           }
 
-          return (left.player?.full_name ?? "").localeCompare(right.player?.full_name ?? "");
+          return comparePlayersBySurname(left.player, right.player);
         })
         .map((row, index) => ({
           ...row,
