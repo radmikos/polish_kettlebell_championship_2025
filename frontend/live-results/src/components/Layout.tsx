@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Layout as AntLayout, Menu, Button, Drawer } from "antd";
+import {
+  Layout as AntLayout,
+  Menu,
+  Button,
+  Drawer,
+  Grid,
+  Flex,
+  Typography,
+  theme,
+} from "antd";
 import { MenuOutlined } from "@ant-design/icons";
-import styles from "./Layout.module.css";
+import { layoutConstants } from "../theme";
 
 const { Header, Content, Footer } = AntLayout;
+const { Title, Text } = Typography;
 
 const navItems = [
   {
@@ -28,67 +38,153 @@ const navItems = [
 const Layout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
-  const currentYear = new Date().getFullYear();
+  const screens = Grid.useBreakpoint();
+  const { token } = theme.useToken();
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
 
-  const selectedKeys = () => {
+  const selectedKeys = useMemo(() => {
     if (location.pathname.startsWith("/live")) return ["live"];
     if (location.pathname.startsWith("/contact")) return ["contact"];
     return [];
-  };
+  }, [location.pathname]);
+
+  const isDesktop = screens.md ?? false;
 
   return (
-    <AntLayout className={styles.appContainer}>
-      <Header className={styles.header}>
-        <div className={styles.logoContainer}>
-          <Link to="/" className={styles.logoLink}>
-            Mistrzostwa Polski Kettlebell 2025
-          </Link>
-        </div>
-
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          selectedKeys={selectedKeys()}
-          className={`${styles.navigationMenu} ${styles.desktopNav}`}
-          items={navItems}
-        />
-
-        <Button
-          className={styles.mobileNavButton}
-          icon={<MenuOutlined />}
-          type="primary"
-          onClick={() => setDrawerOpen(true)}
-        />
-        <Drawer
-          title="Nawigacja"
-          placement="right"
-          onClose={() => setDrawerOpen(false)}
-          open={drawerOpen}
-          className={styles.mobileDrawer}
+    <AntLayout
+      style={{
+        minHeight: "100vh",
+        background: token.colorBgLayout,
+      }}
+    >
+      <Header
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: token.zIndexPopupBase ?? 1000,
+          paddingInline: 0,
+          backdropFilter: "blur(6px)",
+          borderBottom: `1px solid ${token.colorBorder}`,
+        }}
+      >
+        <Flex
+          align="center"
+          justify="space-between"
+          style={{
+            margin: "0 auto",
+            maxWidth: layoutConstants.maxWidth,
+            width: "100%",
+            paddingInline: isDesktop ? 32 : 20,
+            height: layoutConstants.headerHeight,
+            background: token.colorBgContainer,
+          }}
         >
-          <Menu
-            mode="vertical"
-            selectedKeys={selectedKeys()}
-            items={navItems.map((item) => ({
-              ...item,
-              label: (
-                <Link
-                  to={`/${item.key === "live" ? "live" : item.key}`}
-                  onClick={() => setDrawerOpen(false)}
-                >
-                  {item.key === "live" ? "Transmisja live" : "Kontakt"}
-                </Link>
-              ),
-            }))}
-          />
-        </Drawer>
+          <Title
+            level={3}
+            style={{
+              margin: 0,
+              color: token.colorTextHeading,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
+            <Link
+              to="/"
+              style={{
+                color: "inherit",
+                textDecoration: "none",
+              }}
+            >
+              Mistrzostwa Polski Kettlebell 2025
+            </Link>
+          </Title>
+
+          {isDesktop ? (
+            <Menu
+              mode="horizontal"
+              selectedKeys={selectedKeys}
+              items={navItems}
+              style={{
+                borderBottom: "none",
+                background: "transparent",
+              }}
+            />
+          ) : (
+            <Button
+              icon={<MenuOutlined />}
+              type="primary"
+              onClick={() => setDrawerOpen(true)}
+            />
+          )}
+        </Flex>
       </Header>
 
-      <Content className={styles.mainContent}>
+      <Drawer
+        title="Nawigacja"
+        placement="right"
+        onClose={() => setDrawerOpen(false)}
+        open={drawerOpen}
+        styles={{
+          body: {
+            padding: 0,
+            background: token.colorBgContainer,
+          },
+          header: {
+            background: token.colorBgContainer,
+            borderBottom: `1px solid ${token.colorBorder}`,
+          },
+          content: {
+            background: token.colorBgContainer,
+          },
+        }}
+      >
+        <Menu
+          mode="vertical"
+          selectedKeys={selectedKeys}
+          items={navItems.map((item) => ({
+            ...item,
+            label: (
+              <Link
+                to={`/${item.key === "live" ? "live" : item.key}`}
+                onClick={() => setDrawerOpen(false)}
+              >
+                {item.key === "live" ? "Transmisja live" : "Kontakt"}
+              </Link>
+            ),
+          }))}
+          style={{
+            borderRight: "none",
+            background: "transparent",
+          }}
+        />
+      </Drawer>
+
+      <Content
+        style={{
+          width: "100%",
+          maxWidth: layoutConstants.maxWidth,
+          margin: "24px auto",
+          padding: isDesktop ? 32 : 20,
+          borderRadius: token.borderRadiusLG,
+          background: token.colorBgContainer,
+          border: `1px solid ${token.colorBorder}`,
+        }}
+      >
         <Outlet />
       </Content>
-      <Footer className={styles.footer}>
-        © {currentYear} Mistrzostwa Polski Kettlebell. Wszelkie prawa zastrzeżone.
+
+      <Footer
+        style={{
+          textAlign: "center",
+          color: token.colorTextDescription,
+          background: "transparent",
+          borderTop: `1px solid ${token.colorBorder}`,
+          padding: "24px 16px",
+        }}
+      >
+        <Text>
+          © {currentYear} Mistrzostwa Polski Kettlebell. Wszelkie prawa zastrzeżone.
+        </Text>
       </Footer>
     </AntLayout>
   );
