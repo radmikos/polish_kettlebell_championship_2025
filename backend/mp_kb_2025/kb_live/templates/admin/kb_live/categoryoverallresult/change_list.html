@@ -1,0 +1,66 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_list static %}
+
+{% block search %}
+{% if cl.search_fields or category_filter_choices %}
+<div id="toolbar">
+    <form id="changelist-search" method="get" role="search">
+        <div>
+            <label for="searchbar"><img src="{% static "admin/img/search.svg" %}" alt="Search"></label>
+
+            <select id="id_category_filter" name="{{ category_filter_param_name }}">
+                <option value="">{% trans "Wszystkie kategorie" %}</option>
+                {% for category in category_filter_choices %}
+                    <option value="{{ category.pk }}"{% if selected_category_filter == category.pk|stringformat:"s" %} selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+
+            {% if cl.search_fields %}
+                <input type="text" size="40" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar"{% if cl.search_help_text %} aria-describedby="searchbar_helptext"{% endif %}>
+            {% endif %}
+
+            <input type="submit" value="{% trans 'Search' %}">
+            {% if show_result_count %}
+                <span class="small quiet">
+                    {% blocktrans count counter=cl.result_count %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}
+                    (<a href="?{% if cl.is_popup %}{{ is_popup_var }}=1{% if cl.add_facets %}&{% endif %}{% endif %}{% if cl.add_facets %}{{ is_facets_var }}{% endif %}">
+                        {% if cl.show_full_result_count %}
+                            {% blocktrans with full_result_count=cl.full_result_count %}{{ full_result_count }} total{% endblocktrans %}
+                        {% else %}
+                            {% trans "Show all" %}
+                        {% endif %}
+                    </a>)
+                </span>
+            {% endif %}
+
+            {% for key, value in cl.params.items %}
+                {% if key != search_var and key != category_filter_param_name and key != 'p' %}
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endif %}
+            {% endfor %}
+
+            {% if cl.search_help_text %}
+                <br class="clear">
+                <div class="help" id="searchbar_helptext">{{ cl.search_help_text }}</div>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extrajs %}
+    {{ block.super }}
+    <script>
+        (function() {
+            const select = document.getElementById("id_category_filter");
+            const form = document.getElementById("changelist-search");
+            if (!select || !form) {
+                return;
+            }
+            select.addEventListener("change", function () {
+                form.submit();
+            });
+        }());
+    </script>
+{% endblock %}
