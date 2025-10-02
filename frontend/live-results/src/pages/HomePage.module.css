@@ -1,12 +1,3 @@
-/* Sekcja: Widok główny */
-.homePage {
-  padding: 1rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  background: var(--home-section-background);
-}
-
 /* Sekcja: Nagłówek strony */
 .header {
   text-align: center;

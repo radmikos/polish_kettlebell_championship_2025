@@ -1,10 +1,20 @@
 import { useMemo } from "react";
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Typography, Spin, Alert } from "antd";
+import {
+  Typography,
+  Spin,
+  Alert,
+  Card,
+  Space,
+  Tag,
+  Flex,
+  Grid,
+  theme,
+} from "antd";
 import apiClient from "../services/api";
 import { CategorySummary } from "../types";
-import styles from "./HomePage.module.css";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -72,6 +82,10 @@ const HomePage = () => {
     staleTime: 5 * 60 * 1000,
   });
 
+  const screens = Grid.useBreakpoint();
+  const { token } = theme.useToken();
+  const isMobile = !screens.md;
+
   const groupedCategories = useMemo(() => {
     const initial: Record<GroupKey, CategorySummary[]> = {
       junior: [],
@@ -92,36 +106,59 @@ const HomePage = () => {
 
   if (isLoading) {
     return (
-      <div className={styles.loadingWrapper}>
+      <Flex align="center" justify="center" style={{ minHeight: 320 }}>
         <Spin size="large" tip="Ładujemy kategorie..." />
-      </div>
+      </Flex>
     );
   }
 
   if (isError) {
     return (
-      <div className={styles.errorWrapper}>
+      <Flex align="center" justify="center" style={{ minHeight: 320 }}>
         <Alert
           type="error"
           message="Nie udało się pobrać kategorii"
           description={error?.message ?? "Spróbuj ponownie za chwilę."}
           showIcon
-          className={styles.errorText}
+          style={{ maxWidth: 420 }}
         />
-      </div>
+      </Flex>
     );
   }
 
   const hasAnyCategory = categories.length > 0;
+  const sectionCardStyle: CSSProperties = {
+    background: token.colorBgContainer,
+    border: `1px solid ${token.colorBorder}`,
+  };
+  const pageGap = isMobile ? 16 : 24;
+  const categoryGap = isMobile ? 12 : 20;
 
   return (
-    <div className={styles.homePage}>
-      <header className={styles.header}>
-        <Title level={1} className={styles.pageTitle}>
+    <Space direction="vertical" size={pageGap} style={{ width: "100%" }}>
+      <Card
+        style={sectionCardStyle}
+        bodyStyle={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: isMobile ? 8 : 12,
+          textAlign: "center",
+        }}
+      >
+        <Title
+          level={1}
+          style={{
+            margin: 0,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: token.colorTextHeading,
+          }}
+        >
           Wyniki na żywo
         </Title>
-        {isFetching && <Text>Odświeżamy dane…</Text>}
-      </header>
+        {isFetching && <Text type="secondary">Odświeżamy dane…</Text>}
+      </Card>
 
       {hasAnyCategory ? (
         groupConfig.map((config) => {
@@ -129,50 +166,119 @@ const HomePage = () => {
           if (!group || group.length === 0) return null;
 
           return (
-            <section key={config.key} className={styles.categorySection}>
-              <Title level={2} className={styles.sectionTitle}>
-                {config.title}
-              </Title>
-              <div className={styles.cards}>
+            <Card
+              key={config.key}
+              title={
+                <Title level={2} style={{ margin: 0 }}>
+                  {config.title}
+                </Title>
+              }
+              style={sectionCardStyle}
+              headStyle={{
+                borderBottom: "none",
+                paddingBottom: 0,
+              }}
+              bodyStyle={{
+                paddingTop: isMobile ? 12 : 16,
+              }}
+            >
+              <Flex
+                wrap
+                gap={categoryGap}
+                justify={isMobile ? "center" : "flex-start"}
+              >
                 {group.map((category) => {
                   const secondary = formatSecondaryName(category.name);
+                  const meta = buildMetaDescription(category);
                   return (
                     <Link
                       key={category.id}
                       to={`/category/${category.id}`}
-                      className={styles.categoryLink}
+                      style={{
+                        textDecoration: "none",
+                        flex: "1 1 260px",
+                        maxWidth: 360,
+                      }}
                     >
-                      <article className={styles.categoryCard}>
-                        <div className={styles.categoryName}>
-                          {formatPrimaryName(category.name)}
-                        </div>
-                        {secondary && (
-                          <div className={styles.secondaryName}>{secondary}</div>
-                        )}
-                        <div className={styles.meta}>
-                          {buildMetaDescription(category)}
-                        </div>
-                        <div className={styles.disciplines}>
+                      <Card
+                        hoverable
+                        style={{
+                          height: "100%",
+                          background: token.colorBgElevated,
+                          border: `1px solid ${token.colorBorder}`,
+                        }}
+                        bodyStyle={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 12,
+                          alignItems: "center",
+                          textAlign: "center",
+                          padding: isMobile ? 16 : 20,
+                        }}
+                      >
+                        <Space direction="vertical" size={6} style={{ width: "100%" }}>
+                          <Text
+                            strong
+                            style={{
+                              fontFamily: "Oswald, sans-serif",
+                              fontSize: isMobile ? 18 : 20,
+                              letterSpacing: "0.06em",
+                              textTransform: "uppercase",
+                              color: token.colorText,
+                            }}
+                          >
+                            {formatPrimaryName(category.name)}
+                          </Text>
+                          {secondary && (
+                            <Text
+                              style={{
+                                fontFamily: "Oswald, sans-serif",
+                                fontSize: isMobile ? 15 : 16,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.05em",
+                                color: token.colorTextSecondary,
+                              }}
+                            >
+                              {secondary}
+                            </Text>
+                          )}
+                          {meta && (
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              {meta}
+                            </Text>
+                          )}
+                        </Space>
+                        <Flex wrap gap={8} justify="center">
                           {category.disciplines_verbose?.map((disc) => (
-                            <span key={disc.code} className={styles.disciplineTag}>
+                            <Tag
+                              key={disc.code}
+                              bordered={false}
+                              style={{
+                                background: token.colorBgContainer,
+                                color: token.colorLink,
+                                letterSpacing: "0.05em",
+                              }}
+                            >
                               {disc.label}
-                            </span>
+                            </Tag>
                           ))}
-                        </div>
-                      </article>
+                        </Flex>
+                      </Card>
                     </Link>
                   );
                 })}
-              </div>
-            </section>
+              </Flex>
+            </Card>
           );
         })
       ) : (
-        <Paragraph className={styles.emptyState}>
-          Kategorie nie są jeszcze dostępne.
-        </Paragraph>
+        <Card style={sectionCardStyle}>
+          <Paragraph style={{ textAlign: "center", margin: 0 }}>
+            Kategorie nie są jeszcze dostępne.
+          </Paragraph>
+        </Card>
       )}
-    </div>
+    </Space>
   );
 };
 
