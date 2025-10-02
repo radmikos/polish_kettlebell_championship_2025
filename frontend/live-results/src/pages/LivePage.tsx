@@ -82,6 +82,15 @@ const parsedVideos = rawList
 
 const { Text } = Typography;
 
+/**
+ * LivePage layout guide
+ * - Video cards: rendered inside the `parsedVideos.map` block, each wrapped in an Ant Design `Card`
+ *   using shared helpers from `theme/sharedStyles.ts` for consistent surfaces.
+ * - Empty state: see the conditional branch returning `<Empty />` when there are no videos.
+ * - Action buttons / links: located near the iframe markup inside each card body.
+ * Adjust spacing via `videoCardStyle`, `videoContainerStyle`, and breakpoint-aware `pageGap`.
+ */
+
 const LivePage = () => {
   const { token } = theme.useToken();
   const screens = Grid.useBreakpoint();
