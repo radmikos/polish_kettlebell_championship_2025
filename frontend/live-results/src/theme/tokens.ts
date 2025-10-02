@@ -16,14 +16,14 @@ const fontFamilyHeading = '"Bebas Neue", sans-serif';
 const fontFamilyBody = '"Oswald", sans-serif';
 
 export const seedTokens: Partial<GlobalToken> = {
-  colorPrimary: "#bd7100ff",
+  colorPrimary: "#cf6400ff",
   colorSuccess: "#4ade80",
   colorWarning: "#616161ff",
   colorError: "#ff0000ff",
   colorInfo: "#0bb6ff",
   colorBgBase: "#0d0d0d",
   colorBgContainer: "#202020ff",
-  colorBgElevated: "#f09103ff",
+  colorBgElevated: "#cf6400ff",
   colorTextBase: "#ffffffff",
   colorBorder: "#ffc857",
   colorBorderSecondary: "#303b4d",
@@ -47,7 +47,7 @@ export const seedTokens: Partial<GlobalToken> = {
 };
 
 export const aliasTokens: Partial<GlobalToken> = {
-  colorPrimaryBg: "#d37b17ff",
+  colorPrimaryBg: "#cf6400ff",
   colorPrimaryBorder: "#14f500ff",
   colorPrimaryHover: "#1d5a76",
   colorLinkActive: "#0ea5e9",
