@@ -1,16 +1,16 @@
+/*
+  Global baseline styles:
+  - Loads shared font families for the Ant Design theme tokens.
+  - Applies a minimal reset while deferring colors/typography to Ant tokens via CSS variables.
+  - Keeps dark color scheme so native form controls follow the app theme.
+*/
+
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&family=Oswald:wght@400;600&display=swap");
-@import url("@mpkb/shared-styles/styles/tokens.css");
 
 :root {
-  --heading-font-family: var(--font-heading);
-  --heading-font-weight: 600;
-  --heading-letter-spacing: 0.06em;
-  --heading-line-height: 1.2;
-  --heading-color: #ffffff;
-  --heading-margin-bottom: 0.75rem;
+  color-scheme: dark;
 }
 
-/* Sekcja: Reset bazowy */
 *,
 *::before,
 *::after {
@@ -19,24 +19,25 @@
   padding: 0;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 html {
   font-size: 16px;
-  font-family: var(--font-ui);
-  line-height: 1.6;
-  color: var(--color-text-primary);
 }
 
-/* Sekcja: Tło aplikacji */
 body {
-  background: var(--color-bg-page);
-  color: var(--color-text-primary);
-  min-height: 100vh;
-  font-family: var(--font-ui);
+  background: var(--ant-color-bg-base, #e04b4b);
+  color: var(--ant-color-text, #2e0000);
+  font-family: var(--ant-font-family, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", sans-serif);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  color-scheme: dark;
 }
 
-/* Sekcja: Typografia nagłówków */
 h1,
 h2,
 h3,
@@ -49,12 +50,12 @@ h6,
 .ant-typography.ant-typography-h4,
 .ant-typography.ant-typography-h5,
 .ant-typography.ant-typography-h6 {
-  font-family: var(--heading-font-family);
-  font-weight: var(--heading-font-weight);
-  letter-spacing: var(--heading-letter-spacing);
-  line-height: var(--heading-line-height);
-  color: var(--heading-color);
-  margin: 0 0 var(--heading-margin-bottom);
+  font-family: var(--ant-font-family-heading, "Bebas Neue", sans-serif);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  color: var(--ant-color-text-heading, #c50707);
+  margin: 0 0 0.75rem;
 }
 
 .ant-typography.ant-typography-h1,
@@ -66,155 +67,25 @@ h6,
   display: block;
 }
 
-/* Sekcja: Tekst i linki */
 p,
-li {
-  font-family: var(--font-body);
-  font-weight: 400;
-  color: var(--color-black);
-}
-
+li,
 span {
-  font-family: var(--font-body);
+  font-family: var(--ant-font-family-body, "Oswald", sans-serif);
   font-weight: 400;
   color: inherit;
 }
 
 a {
-  color: var(--color-link);
+  color: var(--ant-color-link, #069ada);
   text-decoration: none;
-  transition: color var(--transition-base);
+  transition: color 0.2s ease;
 }
 
 a:hover {
-  color: var(--color-link-hover);
+  color: var(--ant-color-link-hover, #0ea5e9);
 }
 
-/* Sekcja: Elementy interaktywne */
-button,
-input,
-select,
-textarea {
-  font-family: var(--font-ui);
-  color: var(--color-text-primary);
-}
-
-/* Sekcja: Stany systemowe */
-.loading-message,
-.error-message {
-  padding: 1rem;
-  margin: 1rem auto;
-  max-width: 640px;
-  border-radius: var(--radius-sm);
-  text-align: center;
-  border: 1px solid;
-  background: var(--color-bg-panel);
-}
-
-.loading-message {
-  border-color: var(--color-warning);
-  color: var(--color-warning);
-}
-
-.error-message {
-  border-color: var(--color-error);
-  color: var(--color-error);
-}
-
-/* Sekcja: Ustawienia układu */
-.centered {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  min-height: 200px;
-  background: var(--color-bg-panel);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-}
-
-/* Sekcja: Pogrubiane kolumny tabeli */
-.boldColumn span {
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-/* Sekcja: Selektor zaznaczenia */
 ::selection {
-  background: var(--color-link);
-  color: var(--color-text-primary);
-}
-
-/* Sekcja: Widok mobilny */
-@media (max-width: 768px) {
-  :root {
-    --header-height: 58px;
-  }
-
-  html {
-    font-size: 15px;
-  }
-
-  body {
-    padding: calc(env(safe-area-inset-top, 0px) + 0.75rem)
-      clamp(0.9rem, 5vw, 1.4rem)
-      calc(env(safe-area-inset-bottom, 0px) + 1.75rem);
-  }
-
-  h1 {
-    margin: 1rem 0 0.75rem;
-  }
-
-  h2 {
-    margin: 0.9rem 0 0.75rem;
-  }
-
-  h3 {
-    margin: 0.85rem 0 0.65rem;
-    letter-spacing: 1px;
-  }
-
-  .loading-message,
-  .error-message {
-    margin: 1rem 0.5rem;
-    max-width: 100%;
-    padding: 0.85rem;
-  }
-
-  .centered {
-    padding: 1.25rem;
-    min-height: 160px;
-  }
-}
-
-/* Sekcja: Widok bardzo mobilny */
-@media (max-width: 480px) {
-  html {
-    font-size: 14px;
-  }
-
-  body {
-    padding:
-      calc(env(safe-area-inset-top, 0px) + 0.65rem)
-      clamp(0.8rem, 6vw, 1.1rem)
-      calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
-  }
-
-  h1 {
-    font-size: clamp(1.8rem, 9vw, 2.2rem);
-  }
-
-  h2 {
-    font-size: clamp(1.5rem, 7.5vw, 2rem);
-  }
-
-  h3 {
-    font-size: clamp(1.25rem, 6.5vw, 1.7rem);
-  }
-
-  p,
-  span,
-  li {
-    line-height: 1.55;
-  }
+  background: var(--ant-color-link, #38bdf8);
+  color: var(--ant-color-bg-base, #0d0d0d);
 }
