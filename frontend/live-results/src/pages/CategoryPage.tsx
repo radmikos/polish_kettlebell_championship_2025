@@ -368,8 +368,7 @@ const createDisciplineColumns = (code: string): ColumnsType<DisciplineRow> => {
 const detailContainerStyle = (token: GlobalToken): CSSProperties => ({
   padding: 12,
   borderRadius: token.borderRadius,
-  border: `1px solid ${token.colorBorder}`,
-  background: token.colorBgElevated,
+  background: token.colorWarning,
 });
 
 const detailHeaderStyle: React.CSSProperties = {
@@ -579,7 +578,7 @@ const CategoryPage = () => {
             width: "100%",
             padding: 16,
             borderRadius: token.borderRadiusLG,
-            background: token.colorBgElevated,
+            background: token.colorWarning,
             border: `1px solid ${token.colorBorder}`,
           }}
         >
