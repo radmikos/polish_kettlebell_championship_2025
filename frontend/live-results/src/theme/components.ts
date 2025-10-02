@@ -1,9 +1,9 @@
 import type { ThemeConfig } from "antd";
 import { aliasTokens, layoutConstants, seedTokens } from "./tokens";
 
-const colorBgPanel = (seedTokens.colorBgContainer as string) ?? "#1f1f1f";
+const colorBgPanel = (seedTokens.colorBgContainer as string) ?? "#eb0000ff";
 const colorBgBase = (seedTokens.colorBgBase as string) ?? "#0d0d0d";
-const colorTextPrimary = (aliasTokens.colorText as string) ?? "#dd2323ff";
+const colorTextPrimary = (aliasTokens.colorText as string) ?? "#ffffffff";
 const colorBorder = (seedTokens.colorBorder as string) ?? "#e62020ff";
 
 export const componentTokens: ThemeConfig["components"] = {
@@ -43,10 +43,10 @@ export const componentTokens: ThemeConfig["components"] = {
     boxShadow: "none",
   },
   Table: {
-    headerBg: (aliasTokens.colorPrimaryBg as string) ?? "#1d5a76",
+    headerBg: (aliasTokens.colorPrimaryBg as string) ?? "#005a81ff",
     headerColor: (aliasTokens.colorTextHeading as string) ?? "#ffffff",
     colorBgContainer: colorBgPanel,
-    rowHoverBg: (aliasTokens.colorPrimaryBgHover as string) ?? "#123041",
+    rowHoverBg: (aliasTokens.colorPrimaryBgHover as string) ?? "#4d4d4dff",
     headerBorderRadius: (seedTokens.borderRadius as number) ?? 12,
     borderColor: colorBorder,
   },

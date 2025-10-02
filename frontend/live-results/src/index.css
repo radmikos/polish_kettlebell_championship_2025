@@ -1,3 +1,10 @@
+/*
+  Global baseline styles:
+  - Loads shared font families for the Ant Design theme tokens.
+  - Applies a minimal reset while deferring colors/typography to Ant tokens via CSS variables.
+  - Keeps dark color scheme so native form controls follow the app theme.
+*/
+
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&family=Oswald:wght@400;600&display=swap");
 
 :root {
@@ -23,10 +30,10 @@ html {
 }
 
 body {
-  background: #0d0d0d;
-  color: #ffffff;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", sans-serif;
+  background: var(--ant-color-bg-base, #e04b4b);
+  color: var(--ant-color-text, #2e0000);
+  font-family: var(--ant-font-family, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", sans-serif);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
@@ -43,11 +50,11 @@ h6,
 .ant-typography.ant-typography-h4,
 .ant-typography.ant-typography-h5,
 .ant-typography.ant-typography-h6 {
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ant-font-family-heading, "Bebas Neue", sans-serif);
   font-weight: 600;
   letter-spacing: 0.06em;
   line-height: 1.2;
-  color: #ffffff;
+  color: var(--ant-color-text-heading, #c50707);
   margin: 0 0 0.75rem;
 }
 
@@ -61,29 +68,24 @@ h6,
 }
 
 p,
-li {
-  font-family: "Oswald", sans-serif;
-  font-weight: 400;
-  color: inherit;
-}
-
+li,
 span {
-  font-family: "Oswald", sans-serif;
+  font-family: var(--ant-font-family-body, "Oswald", sans-serif);
   font-weight: 400;
   color: inherit;
 }
 
 a {
-  color: #38bdf8;
+  color: var(--ant-color-link, #069ada);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: #0ea5e9;
+  color: var(--ant-color-link-hover, #0ea5e9);
 }
 
 ::selection {
-  background: #38bdf8;
-  color: #ffffff;
+  background: var(--ant-color-link, #38bdf8);
+  color: var(--ant-color-bg-base, #0d0d0d);
 }

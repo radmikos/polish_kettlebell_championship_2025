@@ -18,6 +18,15 @@ import { CategorySummary } from "../types";
 
 const { Title, Paragraph, Text } = Typography;
 
+/**
+ * HomePage layout guide
+ * - Hero intro card: first `Card` inside the component, sets tournament blurb + quick info.
+ * - Category groups: rendered via `groupConfig.map`, each section lives in the same file and
+ *   uses Ant Design `Card`, `Space`, and `Flex` with inline styles for responsive spacing.
+ * - Pill tags and meta info: check the Tag instances within the mapped category cards.
+ * Styling utilities reused here come from `theme/sharedStyles.ts` (panel helpers) when needed.
+ */
+
 type GroupKey = "junior" | "amateur" | "pro" | "masters" | "open" | "other";
 
 interface GroupConfig {
