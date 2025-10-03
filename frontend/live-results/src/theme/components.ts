@@ -1,7 +1,7 @@
 import type { ThemeConfig } from "antd";
 import { aliasTokens, layoutConstants, seedTokens } from "./tokens";
 
-const colorBgPanel = (seedTokens.colorBgContainer as string) ?? "#eb0000ff";
+const colorBgPanel = (seedTokens.colorBgContainer as string) ?? "#00eb33ff";
 const colorBgBase = (seedTokens.colorBgBase as string) ?? "#0d0d0d";
 const colorTextPrimary = (aliasTokens.colorText as string) ?? "#ffffffff";
 const colorBorder = (seedTokens.colorBorder as string) ?? "#e62020ff";
