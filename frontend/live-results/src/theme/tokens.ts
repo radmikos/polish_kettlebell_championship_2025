@@ -20,6 +20,8 @@ export const seedTokens: Partial<GlobalToken> = {
   colorSuccess: "#4ade80",
   colorWarning: "#616161ff",
   colorError: "#ff0000ff",
+  colorErrorBg: "#2a0000ff",
+  colorErrorBorder: "#2a0000ff",
   colorInfo: "#0bb6ff",
   colorBgBase: "#0d0d0d",
   colorBgContainer: "#202020ff",

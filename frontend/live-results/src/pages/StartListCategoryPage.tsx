@@ -79,7 +79,7 @@ const StartListCategoryPage = () => {
         />
       ) : (
         <Alert
-          type="info"
+          type="error"
           message="Brak podpiętego pliku JPG"
           description="Umieść plik w katalogu public/start-lists i odśwież stronę, aby go wyświetlić."
           showIcon
