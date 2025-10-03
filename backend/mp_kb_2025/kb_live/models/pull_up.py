@@ -28,17 +28,22 @@ class PullUpResult(BaseBWPoints):
 
     @property
     def best_attempt(self) -> float:
-        return max(
-            filter(lambda x: x is not None, [self.attempt_1, self.attempt_2, self.attempt_3]),
-            default=0.0,
-        )
+        attempts = [
+            attempt
+            for attempt in (self.attempt_1, self.attempt_2, self.attempt_3)
+            if attempt is not None and attempt > 0
+        ]
+        return max(attempts, default=0.0)
 
     @property
     def points(self) -> float:
         ctx = self._ctx
         if not ctx:
             return 0.0
-        val = pull_up_points(ctx, float(self.best_attempt or 0.0))
+        best_attempt = float(self.best_attempt or 0.0)
+        if best_attempt <= 0:
+            return 0.0
+        val = pull_up_points(ctx, best_attempt)
         return round(val, 3) if val is not None else 0.0
 
     def __str__(self) -> str:
