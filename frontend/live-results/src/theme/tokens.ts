@@ -49,7 +49,7 @@ export const seedTokens: Partial<GlobalToken> = {
 };
 
 export const aliasTokens: Partial<GlobalToken> = {
-  colorPrimaryBg: "#cf6400ff",
+  colorPrimaryBg: "#ffffffff",
   colorPrimaryBorder: "#14f500ff",
   colorPrimaryHover: "#1d5a76",
   colorLinkActive: "#0ea5e9",
