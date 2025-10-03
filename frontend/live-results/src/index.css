@@ -89,3 +89,23 @@ a:hover {
   background: var(--ant-color-link, #ffc857);
   color: var(--ant-color-bg-base, #0d0d0d);
 }
+
+.layout-nav-menu.ant-menu-horizontal {
+  overflow: visible !important;
+  white-space: normal !important;
+  flex-wrap: wrap;
+  column-gap: 8px;
+  row-gap: 8px;
+  justify-content: flex-end;
+  padding-inline: 0;
+}
+
+.layout-nav-menu.ant-menu-horizontal > .ant-menu-item,
+.layout-nav-menu.ant-menu-horizontal > .ant-menu-submenu {
+  display: inline-flex;
+  align-items: center;
+}
+
+.layout-nav-menu .ant-menu-overflow-item-rest {
+  display: none !important;
+}

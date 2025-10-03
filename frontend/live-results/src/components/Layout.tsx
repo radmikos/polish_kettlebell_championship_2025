@@ -64,12 +64,14 @@ const Layout = () => {
         <Flex
           align="center"
           justify="space-between"
+          wrap="wrap"
+          gap={12}
           style={{
             margin: "0 auto",
             maxWidth: layoutConstants.maxWidth,
             width: "100%",
             paddingInline: isDesktop ? 32 : 20,
-            height: layoutConstants.headerHeight,
+            minHeight: layoutConstants.headerHeight,
             background: token.colorBgContainer,
           }}
         >
@@ -77,6 +79,8 @@ const Layout = () => {
             level={3}
             style={{
               margin: 0,
+              flex: "1 1 320px",
+              minWidth: 0,
               color: token.colorTextHeading,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
@@ -97,6 +101,7 @@ const Layout = () => {
             <Menu
               mode="horizontal"
               selectedKeys={selectedKeys}
+              disabledOverflow
               items={navConfig.map((entry) => ({
                 key: entry.key,
                 label: (
@@ -105,9 +110,11 @@ const Layout = () => {
                   </Link>
                 ),
               }))}
+              className="layout-nav-menu"
               style={{
                 borderBottom: "none",
                 background: "transparent",
+                marginLeft: "auto",
               }}
             />
           ) : (
