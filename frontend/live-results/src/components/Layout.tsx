@@ -16,23 +16,16 @@ import { layoutConstants } from "../theme";
 const { Header, Content, Footer } = AntLayout;
 const { Title, Text } = Typography;
 
-const navItems = [
-  {
-    key: "live",
-    label: (
-      <Link to="/live">
-        Transmisja live
-      </Link>
-    ),
-  },
-  {
-    key: "contact",
-    label: (
-      <Link to="/contact">
-        Kontakt
-      </Link>
-    ),
-  },
+type NavEntry = {
+  key: string;
+  path: string;
+  text: string;
+};
+
+const navConfig: NavEntry[] = [
+  { key: "live", path: "/live", text: "Transmisja live" },
+  { key: "start-lists", path: "/start-lists", text: "Listy startowe" },
+  { key: "contact", path: "/contact", text: "Kontakt" },
 ];
 
 const Layout = () => {
@@ -44,6 +37,7 @@ const Layout = () => {
 
   const selectedKeys = useMemo(() => {
     if (location.pathname.startsWith("/live")) return ["live"];
+    if (location.pathname.startsWith("/start-lists")) return ["start-lists"];
     if (location.pathname.startsWith("/contact")) return ["contact"];
     return [];
   }, [location.pathname]);
@@ -103,7 +97,14 @@ const Layout = () => {
             <Menu
               mode="horizontal"
               selectedKeys={selectedKeys}
-              items={navItems}
+              items={navConfig.map((entry) => ({
+                key: entry.key,
+                label: (
+                  <Link to={entry.path}>
+                    {entry.text}
+                  </Link>
+                ),
+              }))}
               style={{
                 borderBottom: "none",
                 background: "transparent",
@@ -141,14 +142,11 @@ const Layout = () => {
         <Menu
           mode="vertical"
           selectedKeys={selectedKeys}
-          items={navItems.map((item) => ({
-            ...item,
+          items={navConfig.map((entry) => ({
+            key: entry.key,
             label: (
-              <Link
-                to={`/${item.key === "live" ? "live" : item.key}`}
-                onClick={() => setDrawerOpen(false)}
-              >
-                {item.key === "live" ? "Transmisja live" : "Kontakt"}
+              <Link to={entry.path} onClick={() => setDrawerOpen(false)}>
+                {entry.text}
               </Link>
             ),
           }))}
