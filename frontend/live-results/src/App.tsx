@@ -4,6 +4,8 @@ import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
 import CategoryPage from "./pages/CategoryPage";
 import LivePage from "./pages/LivePage";
+import StartListsPage from "./pages/StartListsPage";
+import StartListCategoryPage from "./pages/StartListCategoryPage";
 import ContactPage from "./pages/ContactPage";
 
 const APP_TITLE = "Mistrzostwa Polski Kettlebell 2025 · Wyniki Live";
@@ -20,6 +22,9 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="category/:categoryId" element={<CategoryPage />} />
           <Route path="live" element={<LivePage />} />
+          <Route path="start-lists" element={<StartListsPage />}>
+            <Route path=":slug" element={<StartListCategoryPage />} />
+          </Route>
           <Route path="contact" element={<ContactPage />} />
         </Route>
       </Routes>
