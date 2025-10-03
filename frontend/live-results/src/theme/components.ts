@@ -43,7 +43,7 @@ export const componentTokens: ThemeConfig["components"] = {
     boxShadow: "none",
   },
   Table: {
-    headerBg: (aliasTokens.colorPrimaryBg as string) ?? "#005a81ff",
+    headerBg: (aliasTokens.colorPrimary as string) ?? "#cf6400ff",
     headerColor: (aliasTokens.colorTextHeading as string) ?? "#ffffff",
     colorBgContainer: colorBgPanel,
     rowHoverBg: (aliasTokens.colorPrimaryBgHover as string) ?? "#4d4d4dff",
