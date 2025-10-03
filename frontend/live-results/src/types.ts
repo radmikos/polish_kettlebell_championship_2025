@@ -101,6 +101,7 @@ export interface CategoryOverallRow {
   placement_points: number | null;
   counted_disciplines: number | null;
   tiebreak_points: number | null;
+  bonus_points: number | null;
   tiebreak_applied: boolean;
   discipline_points: DisciplinePoints;
   placements: PlacementEntry[];

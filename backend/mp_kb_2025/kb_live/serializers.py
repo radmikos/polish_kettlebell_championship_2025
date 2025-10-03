@@ -159,6 +159,7 @@ class PlayerDetailSerializer(PlayerSummarySerializer):
                     "placement_points": row.placement_points,
                     "counted_disciplines": row.counted_disciplines,
                     "tiebreak_points": row.tiebreak_points,
+                    "bonus_points": row.bonus_points,
                     "discipline_points": {
                         "snatch": row.snatch_points,
                         "tgu": row.tgu_points,
@@ -247,6 +248,7 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
             "placement_points",
             "counted_disciplines",
             "tiebreak_points",
+            "bonus_points",
             "tiebreak_applied",
             "discipline_points",
             "placements",

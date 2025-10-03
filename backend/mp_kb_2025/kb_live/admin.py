@@ -16,6 +16,7 @@ from .models import (
     Discipline,
     PistolResult,
     Player,
+    PlayerCategoryBonus,
     PlayerCategoryTiebreak,
     PullUpResult,
     SeeSawPressResult,
@@ -68,6 +69,14 @@ class PlayerAdmin(ImportExportModelAdmin):
 @admin.register(PlayerCategoryTiebreak)
 class PlayerCategoryTiebreakAdmin(admin.ModelAdmin):
     list_display = ("player", "category")
+    search_fields = ("player__surname", "player__name", "category__name")
+    autocomplete_fields = ("player", "category")
+    list_select_related = ("player", "category")
+
+
+@admin.register(PlayerCategoryBonus)
+class PlayerCategoryBonusAdmin(admin.ModelAdmin):
+    list_display = ("player", "category", "points")
     search_fields = ("player__surname", "player__name", "category__name")
     autocomplete_fields = ("player", "category")
     list_select_related = ("player", "category")
@@ -295,6 +304,7 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "pistol_points_disp",
         "pull_up_place_disp",
         "pull_up_points_disp",
+        "bonus_points_disp",
         "placement_points_disp",
         "total_points_disp",
         "final_position_disp",
@@ -317,6 +327,7 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "pistol_place",
         "pull_up_place",
         "tiebreak_points",
+        "bonus_points",
         "total_points",
         "placement_points",
         "counted_disciplines",
@@ -450,6 +461,12 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
 
     pull_up_place_disp.short_description = "Miejsce Pull-Up"
     pull_up_place_disp.admin_order_field = "pull_up_place"
+
+    def bonus_points_disp(self, obj):
+        return self._fmt(obj.bonus_points)
+
+    bonus_points_disp.short_description = "Punkty dodatkowe"
+    bonus_points_disp.admin_order_field = "bonus_points"
 
     def placement_points_disp(self, obj):
         return self._fmt(obj.placement_points)

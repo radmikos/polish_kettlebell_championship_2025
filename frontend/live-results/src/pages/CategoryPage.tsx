@@ -241,6 +241,21 @@ const useOverallColumns = (
       render: (value: number | null | undefined) => formatNumber(value, 1),
       sorter: (a, b) => (a.player?.weight ?? 0) - (b.player?.weight ?? 0),
     },
+  ];
+
+  const sumColumn: ColumnsType<ProcessedCategoryRow>[number] = {
+    title: "Suma punktów",
+    dataIndex: "total_points",
+    key: "total-points",
+    align: "right",
+    width: 160,
+    render: (value: number | null | undefined) => formatInteger(value),
+    sorter: (a, b) =>
+      (a.total_points ?? Number.MAX_SAFE_INTEGER) -
+      (b.total_points ?? Number.MAX_SAFE_INTEGER),
+  };
+
+  const tailColumns: ColumnsType<ProcessedCategoryRow> = [
     {
       title: "Tie-break",
       dataIndex: "tiebreak_points",
@@ -250,6 +265,16 @@ const useOverallColumns = (
       render: (value: number | null | undefined) => formatInteger(value),
       sorter: (a, b) => (a.tiebreak_points ?? 0) - (b.tiebreak_points ?? 0),
     },
+    {
+      title: "Dodatkowe punkty",
+      dataIndex: "bonus_points",
+      key: "bonus",
+      align: "center",
+      width: 120,
+      render: (value: number | null | undefined) => formatInteger(value),
+      sorter: (a, b) => (a.bonus_points ?? 0) - (b.bonus_points ?? 0),
+    },
+    sumColumn,
   ];
 
   const disciplineColumns: ColumnsType<ProcessedCategoryRow> = (info?.disciplines ?? []).map((code) => {
@@ -265,23 +290,11 @@ const useOverallColumns = (
         formatInteger(record.discipline_places?.[code]),
       sorter: (a, b) =>
         (a.discipline_places?.[code] ?? Number.MAX_SAFE_INTEGER) -
-        (b.discipline_places?.[code] ?? Number.MAX_SAFE_INTEGER),
+      (b.discipline_places?.[code] ?? Number.MAX_SAFE_INTEGER),
     };
   });
 
-  const sumColumn: ColumnsType<ProcessedCategoryRow>[number] = {
-    title: "Suma punktów",
-    dataIndex: "total_points",
-    key: "total-points",
-    align: "right",
-    width: 160,
-    render: (value: number | null | undefined) => formatInteger(value),
-    sorter: (a, b) =>
-      (a.total_points ?? Number.MAX_SAFE_INTEGER) -
-      (b.total_points ?? Number.MAX_SAFE_INTEGER),
-  };
-
-  return [...baseColumns, ...disciplineColumns, sumColumn];
+  return [...baseColumns, ...disciplineColumns, ...tailColumns];
 };
 
 const createDisciplineColumns = (code: string): ColumnsType<DisciplineRow> => {

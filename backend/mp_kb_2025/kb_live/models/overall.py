@@ -46,6 +46,11 @@ class CategoryOverallResult(models.Model):
     pull_up_place = models.PositiveIntegerField(_("Miejsce Pull-Up"), null=True, blank=True)
 
     tiebreak_points = models.FloatField(_("Punkty Tiebreak"), default=0.0)
+    bonus_points = models.FloatField(
+        _("Punkty dodatkowe"),
+        default=0.0,
+        help_text=_("Suma dodatkowych punktów przyznanych ręcznie w klasyfikacji generalnej."),
+    )
     total_points = models.FloatField(_("Suma punktów"), null=True, blank=True, db_index=True)
     placement_points = models.FloatField(_("Suma punktów z miejsc"), null=True, blank=True, db_index=True)
     counted_disciplines = models.PositiveSmallIntegerField(
@@ -139,6 +144,15 @@ class CategoryOverallResult(models.Model):
         tb_exists = self.category.tiebreaks_applied.filter(player=self.player).exists()
         self.tiebreak_points = 1.0 if tb_exists else 0.0
 
+        bonus_entry = self.category.bonus_points_assigned.filter(player=self.player).first()
+        bonus_value: float = 0.0
+        if bonus_entry and bonus_entry.points is not None:
+            try:
+                bonus_value = float(bonus_entry.points)
+            except (TypeError, ValueError):
+                bonus_value = 0.0
+        self.bonus_points = bonus_value
+
         drop_worst = bool(getattr(self.category, "drop_worst_result", False))
 
         placements = self._placements_map()
@@ -183,10 +197,14 @@ class CategoryOverallResult(models.Model):
             self.counted_disciplines = 0
             self.placement_points = None
 
-        if self.placement_points is not None:
-            self.total_points = self.placement_points + (self.tiebreak_points or 0.0)
-        elif self.tiebreak_points:
-            self.total_points = float(self.tiebreak_points)
+        placement_value = self.placement_points
+        tiebreak_value = self.tiebreak_points or 0.0
+        bonus_value = self.bonus_points or 0.0
+
+        if placement_value is not None:
+            self.total_points = float(placement_value + tiebreak_value + bonus_value)
+        elif tiebreak_value or bonus_value:
+            self.total_points = float(tiebreak_value + bonus_value)
         else:
             self.total_points = None
 
@@ -206,6 +224,7 @@ class CategoryOverallResult(models.Model):
                     "pistol_place",
                     "pull_up_place",
                     "tiebreak_points",
+                    "bonus_points",
                     "total_points",
                     "placement_points",
                     "counted_disciplines",
