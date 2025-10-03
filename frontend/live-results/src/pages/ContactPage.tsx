@@ -45,9 +45,9 @@ const ContactPage = () => {
     <Space direction="vertical" style={pageSectionStyle(token, sectionGap)}>
       <Card style={panelCardStyle(token)} bodyStyle={panelCardBodyStyle(cardGap)}>
         <Title level={1}>Kontakt</Title>
-        <Paragraph type="secondary" italic style={{ marginBottom: 0 }}>
-          Masz pytania dotyczące wyników, transmisji lub harmonogramu? Skontaktuj
-          się z zespołem organizacyjnym mistrzostw.
+        <Paragraph>
+          Masz pytania dotyczące wyników, transmisji lub harmonogramu?
+          Skontaktuj się z zespołem organizacyjnym mistrzostw.
         </Paragraph>
       </Card>
 

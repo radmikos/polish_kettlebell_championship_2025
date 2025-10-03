@@ -20,7 +20,7 @@ export const componentTokens: ThemeConfig["components"] = {
   Menu: {
     colorItemBg: "transparent",
     colorItemText: colorTextPrimary,
-    colorItemTextHover: (aliasTokens.colorLink as string) ?? "#069fe0ff",
+    colorItemTextHover: (aliasTokens.colorLink as string) ?? "#ffc857",
     colorItemTextSelected: (seedTokens.colorPrimary as string) ?? "#0bb6ff",
     itemBorderRadius: 12,
     itemMarginInline: 4,
@@ -29,7 +29,7 @@ export const componentTokens: ThemeConfig["components"] = {
     horizontalItemHoverBg: "rgba(197, 3, 3, 0.08)",
     darkItemBg: "transparent",
     darkItemColor: colorTextPrimary,
-    darkItemHoverColor: (aliasTokens.colorLink as string) ?? "#38bdf8",
+    darkItemHoverColor: (aliasTokens.colorLink as string) ?? "#ffffffff",
     darkItemSelectedColor: (seedTokens.colorPrimary as string) ?? "#0bb6ff",
   },
   Button: {
