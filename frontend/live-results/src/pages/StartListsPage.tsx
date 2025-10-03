@@ -17,11 +17,19 @@ const fetchCategories = async (): Promise<CategoryListResponse> => {
   return response.data;
 };
 
+type StartListGroupConfig = {
+  label: string;
+  categorySlugs: string[];
+  assetSlug?: string;
+  slugOverride?: string;
+};
+
 export type StartListEntry = {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   assetHref: string;
+  categoryNames: string[];
 };
 
 export type StartListsOutletContext = {
@@ -29,6 +37,25 @@ export type StartListsOutletContext = {
 };
 
 const buildStartListAssetHref = (slug: string): string => `/start-lists/${slug}.jpg`;
+
+const startListGroups: StartListGroupConfig[] = [
+  {
+    label: "Amator K65 i Junior K",
+    categorySlugs: ["amator-k65", "junior-k"],
+  },
+  {
+    label: "Amator M85 + Junior M",
+    categorySlugs: ["amator-m85", "junior-m"],
+  },
+  {
+    label: "PRO K65 + PRO K+65",
+    categorySlugs: ["pro-k65", "pro-k-65"],
+  },
+  {
+    label: "PRO M85 + PRO M+85",
+    categorySlugs: ["pro-m85", "pro-m-85"],
+  },
+];
 
 const StartListsPage = () => {
   const navigate = useNavigate();
@@ -46,17 +73,59 @@ const StartListsPage = () => {
   const cardGap = isDesktop ? "regular" : "compact";
 
   const startListEntries = useMemo<StartListEntry[]>(() => {
-    return data
+    if (data.length === 0) {
+      return [];
+    }
+
+    const categoryBySlug = new Map<string, CategorySummary>();
+    data.forEach((category) => {
+      const slug = slugify(category.name);
+      categoryBySlug.set(slug, category);
+    });
+
+    const usedCategorySlugs = new Set<string>();
+    const groupedEntries: StartListEntry[] = [];
+
+    startListGroups.forEach((group) => {
+      const matchedCategories = group.categorySlugs
+        .map((targetSlug) => categoryBySlug.get(targetSlug))
+        .filter((category): category is CategorySummary => Boolean(category));
+
+      if (!matchedCategories.length) {
+        return;
+      }
+
+      matchedCategories.forEach((category) => {
+        usedCategorySlugs.add(slugify(category.name));
+      });
+
+      const slug = group.slugOverride ?? slugify(group.label);
+      const assetSlug = group.assetSlug ?? slug;
+
+      groupedEntries.push({
+        id: `group-${slug}`,
+        name: group.label,
+        slug,
+        assetHref: buildStartListAssetHref(assetSlug),
+        categoryNames: matchedCategories.map((category) => category.name),
+      });
+    });
+
+    const standaloneEntries = data
+      .filter((category) => !usedCategorySlugs.has(slugify(category.name)))
       .map((category) => {
         const slug = slugify(category.name);
         return {
-          id: category.id,
+          id: `category-${category.id}`,
           name: category.name,
           slug,
           assetHref: buildStartListAssetHref(slug),
+          categoryNames: [category.name],
         } satisfies StartListEntry;
       })
       .sort((left, right) => left.name.localeCompare(right.name, "pl", { sensitivity: "accent" }));
+
+    return [...groupedEntries, ...standaloneEntries];
   }, [data]);
 
   const hasEntries = startListEntries.length > 0;

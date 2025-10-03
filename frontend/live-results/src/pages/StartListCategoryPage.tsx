@@ -41,6 +41,13 @@ const StartListCategoryPage = () => {
           Lista startowa otwiera się w nowej karcie. Jeżeli potrzebujesz pobrać plik,
           skorzystaj z poniższego przycisku lub odnośnika.
         </Paragraph>
+        {entry.categoryNames.length > 1 ? (
+          <Text type="secondary">
+            Obejmuje kategorie: {entry.categoryNames.join(" · ")}
+          </Text>
+        ) : (
+          <Text type="secondary">Kategoria: {entry.categoryNames[0]}</Text>
+        )}
         <Flex gap={isDesktop ? 12 : 8} wrap>
           <Button
             icon={<DownloadOutlined />}
