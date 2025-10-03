@@ -76,16 +76,16 @@ span {
 }
 
 a {
-  color: var(--ant-color-link, #0ea5e9);
+  color: var(--ant-color-link, #ffc857);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: var(--ant-color-link-hover, #0ea5e9);
+  color: var(--ant-color-link-hover, #ffc857);
 }
 
 ::selection {
-  background: var(--ant-color-link, #38bdf8);
+  background: var(--ant-color-link, #ffc857);
   color: var(--ant-color-bg-base, #0d0d0d);
 }
