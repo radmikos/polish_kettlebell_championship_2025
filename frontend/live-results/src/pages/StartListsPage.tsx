@@ -1,25 +1,15 @@
 import { useEffect, useMemo } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { Card, Flex, Grid, Space, Typography, theme, Spin, Alert, Empty, Tabs } from "antd";
+import { Card, Flex, Grid, Space, Typography, theme, Tabs, Empty } from "antd";
 import type { TabsProps } from "antd";
-import apiClient from "../services/api";
-import { CategorySummary } from "../types";
 import { pageSectionStyle, panelCardBodyStyle, panelCardStyle } from "../theme";
 import { slugify } from "../utils/slug";
 
 const { Title, Paragraph, Text } = Typography;
-
-type CategoryListResponse = CategorySummary[];
-
-const fetchCategories = async (): Promise<CategoryListResponse> => {
-  const response = await apiClient.get<CategorySummary[]>("/categories/");
-  return response.data;
-};
-
-type StartListGroupConfig = {
+ 
+type StartListDefinition = {
   label: string;
-  categorySlugs: string[];
+  categories: string[];
   assetSlug?: string;
   slugOverride?: string;
 };
@@ -38,33 +28,32 @@ export type StartListsOutletContext = {
 
 const buildStartListAssetHref = (slug: string): string => `/start-lists/${slug}.jpg`;
 
-const startListGroups: StartListGroupConfig[] = [
+const startListDefinitions: StartListDefinition[] = [
   {
     label: "Amator K65 i Junior K",
-    categorySlugs: ["amator-k65", "junior-k"],
+    categories: ["Amator K65", "Junior K"],
+  },
+  {
+    label: "Amator K +65",
+    categories: ["Amator K +65"],
   },
   {
     label: "Amator M85 + Junior M",
-    categorySlugs: ["amator-m85", "junior-m"],
+    categories: ["Amator M85", "Junior M"],
   },
   {
     label: "PRO K65 + PRO K+65",
-    categorySlugs: ["pro-k65", "pro-k-65"],
+    categories: ["PRO K65", "PRO K+65"],
   },
   {
     label: "PRO M85 + PRO M+85",
-    categorySlugs: ["pro-m85", "pro-m-85"],
+    categories: ["PRO M85", "PRO M+85"],
   },
 ];
 
 const StartListsPage = () => {
   const navigate = useNavigate();
   const params = useParams();
-  const { data = [], isLoading, isError, error } = useQuery<CategoryListResponse>({
-    queryKey: ["categories"],
-    queryFn: fetchCategories,
-    staleTime: 5 * 60 * 1000,
-  });
 
   const { token } = theme.useToken();
   const screens = Grid.useBreakpoint();
@@ -73,89 +62,37 @@ const StartListsPage = () => {
   const cardGap = isDesktop ? "regular" : "compact";
 
   const startListEntries = useMemo<StartListEntry[]>(() => {
-    if (data.length === 0) {
-      return [];
-    }
-
-    const categoryBySlug = new Map<string, CategorySummary>();
-    data.forEach((category) => {
-      const slug = slugify(category.name);
-      categoryBySlug.set(slug, category);
-    });
-
-    const usedCategorySlugs = new Set<string>();
-    const groupedEntries: StartListEntry[] = [];
-
-    startListGroups.forEach((group) => {
-      const matchedCategories = group.categorySlugs
-        .map((targetSlug) => categoryBySlug.get(targetSlug))
-        .filter((category): category is CategorySummary => Boolean(category));
-
-      if (!matchedCategories.length) {
-        return;
-      }
-
-      matchedCategories.forEach((category) => {
-        usedCategorySlugs.add(slugify(category.name));
-      });
-
-      const slug = group.slugOverride ?? slugify(group.label);
-      const assetSlug = group.assetSlug ?? slug;
-
-      groupedEntries.push({
-        id: `group-${slug}`,
-        name: group.label,
+    return startListDefinitions.map((definition) => {
+      const slug = definition.slugOverride ?? slugify(definition.label);
+      const assetSlug = definition.assetSlug ?? slug;
+      return {
+        id: slug,
+        name: definition.label,
         slug,
         assetHref: buildStartListAssetHref(assetSlug),
-        categoryNames: matchedCategories.map((category) => category.name),
-      });
+        categoryNames: definition.categories,
+      } satisfies StartListEntry;
     });
-
-    const standaloneEntries = data
-      .filter((category) => !usedCategorySlugs.has(slugify(category.name)))
-      .map((category) => {
-        const slug = slugify(category.name);
-        return {
-          id: `category-${category.id}`,
-          name: category.name,
-          slug,
-          assetHref: buildStartListAssetHref(slug),
-          categoryNames: [category.name],
-        } satisfies StartListEntry;
-      })
-      .sort((left, right) => left.name.localeCompare(right.name, "pl", { sensitivity: "accent" }));
-
-    return [...groupedEntries, ...standaloneEntries];
-  }, [data]);
+  }, []);
 
   const hasEntries = startListEntries.length > 0;
 
   useEffect(() => {
-    if (!params.slug && hasEntries) {
-      navigate(startListEntries[0].slug, { replace: true });
+    if (!hasEntries) {
+      return;
+    }
+
+    const firstSlug = startListEntries[0].slug;
+    if (!params.slug) {
+      navigate(firstSlug, { replace: true });
+      return;
+    }
+
+    const exists = startListEntries.some((entry) => entry.slug === params.slug);
+    if (!exists) {
+      navigate(firstSlug, { replace: true });
     }
   }, [params.slug, hasEntries, startListEntries, navigate]);
-
-  if (isLoading) {
-    return (
-      <Flex align="center" justify="center" style={{ minHeight: 320 }}>
-        <Spin size="large" tip="Ładujemy listy startowe..." />
-      </Flex>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Flex align="center" justify="center" style={{ minHeight: 320 }}>
-        <Alert
-          type="error"
-          message="Nie udało się pobrać kategorii"
-          description={error instanceof Error ? error.message : "Spróbuj ponownie."}
-          showIcon
-        />
-      </Flex>
-    );
-  }
 
   if (!hasEntries) {
     return (
@@ -185,6 +122,10 @@ const StartListsPage = () => {
 
   const outletContext = useMemo<StartListsOutletContext>(() => ({ entries: startListEntries }), [startListEntries]);
 
+  const activeTabKey = startListEntries.some((entry) => entry.slug === params.slug)
+    ? params.slug
+    : startListEntries[0]?.slug;
+
   return (
     <Space direction="vertical" style={pageSectionStyle(token, sectionGap)}>
       <Card style={panelCardStyle(token)} bodyStyle={panelCardBodyStyle(cardGap)}>
@@ -202,7 +143,7 @@ const StartListsPage = () => {
         }}
       >
         <Tabs
-          activeKey={params.slug ?? startListEntries[0]?.slug}
+          activeKey={activeTabKey}
           items={tabsItems}
           onChange={(key) => navigate(key)}
           destroyInactiveTabPane
