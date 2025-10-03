@@ -25,6 +25,7 @@ const contactEntries = [
   {
     label: "E-mail",
     value: "ckbbochnia@gmail.com",
+    isLink: true,
   },
   {
     label: "Adres hali",
