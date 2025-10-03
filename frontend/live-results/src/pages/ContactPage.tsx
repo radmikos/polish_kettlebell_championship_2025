@@ -19,17 +19,12 @@ const { Title, Paragraph, Link, Text } = Typography;
 
 const contactEntries = [
   {
-    label: "Biuro zawodów",
-    value: "+48 12345232",
+    label: "Organizator Kacper",
+    value: "+48 511 210 841",
   },
   {
     label: "E-mail",
-    value: "wyniki@mpkb2025.pl",
-    isLink: true,
-  },
-  {
-    label: "Media & PR",
-    value: "media@mpkb2025.pl",
+    value: "ckbbochnia@gmail.com",
   },
   {
     label: "Adres hali",

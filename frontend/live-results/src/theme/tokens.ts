@@ -54,7 +54,7 @@ export const aliasTokens: Partial<GlobalToken> = {
   colorPrimaryHover: "#1d5a76",
   colorLinkActive: "#0ea5e9",
   colorText: "#ffffffff",
-  colorTextSecondary: "rgba(46, 20, 20, 0.75)",
+  colorTextSecondary: "#ffc857",
   colorBgLayout: "#0d0d0d",
   colorBgContainerDisabled: "#696969",
   colorTextLabel: "rgba(255, 255, 255, 0.72)",
