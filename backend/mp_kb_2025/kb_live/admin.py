@@ -74,10 +74,46 @@ class PlayerCategoryTiebreakAdmin(admin.ModelAdmin):
     list_select_related = ("player", "category")
 
 
+class PlayerCategoryBonusForm(forms.ModelForm):
+    class Meta:
+        model = PlayerCategoryBonus
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["discipline"].required = True
+        category_obj = None
+        raw_category = None
+        if self.data:
+            raw_category = self.data.get("category")
+        if not raw_category:
+            raw_category = self.initial.get("category") if isinstance(self.initial, dict) else None
+        if not raw_category and getattr(self.instance, "category_id", None):
+            raw_category = self.instance.category_id
+        if raw_category:
+            try:
+                category_obj = Category.objects.get(pk=raw_category)
+            except (Category.DoesNotExist, ValueError, TypeError):
+                category_obj = getattr(self.instance, "category", None)
+        else:
+            category_obj = getattr(self.instance, "category", None)
+        if category_obj:
+            allowed = set(category_obj.get_disciplines() or [])
+            if allowed:
+                field = self.fields["discipline"]
+                base_choices = list(field.choices)
+                filtered = [(value, label) for value, label in base_choices if value in ("", None) or value in allowed]
+                if filtered:
+                    field.choices = filtered
+
+
+
 @admin.register(PlayerCategoryBonus)
 class PlayerCategoryBonusAdmin(admin.ModelAdmin):
-    list_display = ("player", "category", "points")
+    form = PlayerCategoryBonusForm
+    list_display = ("player", "category", "discipline", "points")
     search_fields = ("player__surname", "player__name", "category__name")
+    list_filter = ("category", "discipline")
     autocomplete_fields = ("player", "category")
     list_select_related = ("player", "category")
 

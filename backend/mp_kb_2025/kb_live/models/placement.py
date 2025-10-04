@@ -3,13 +3,14 @@ from django.utils.translation import gettext_lazy as _
 
 from .category import Category
 from .choices import Discipline
+from .bonus import get_player_bonus_share
 from .player import Player
 
 
 class CategoryPlacement(models.Model):
     """
     Pozycja zawodnika w KATEGORII dla KONKURENCJI,
-    liczona na podstawie JEDNEGO globalnego wyniku + tiebreak (+1) dla (player, category).
+    liczona na podstawie JEDNEGO globalnego wyniku oraz kary tiebreak (-0.5) dla (player, category).
     """
 
     category = models.ForeignKey(
@@ -71,13 +72,14 @@ class CategoryPlacement(models.Model):
             return None
         return None
 
-    # --- punkty z dogrywką (+1) ---
+    # --- punkty z uwzględnioną karą tiebreak (-0.5) ---
     @property
     def points(self) -> float:
-        pts = self.base_points
-        if pts is None:
-            return 0.0
-        # +1 jeśli istnieje tiebreak dla (player, category)
+        base = self.base_points
+        base_value = float(base) if base is not None else 0.0
+        _general_bonus, discipline_bonuses = get_player_bonus_share(self.category, self.player_id)
+        bonus_value = discipline_bonuses.get(self.discipline, 0.0)
+        total = base_value + bonus_value
         if self.category.tiebreaks_applied.filter(player=self.player).exists():
-            return pts + 1.0
-        return pts
+            total -= 0.5
+        return total

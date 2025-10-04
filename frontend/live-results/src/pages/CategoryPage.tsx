@@ -114,6 +114,28 @@ const getDisciplineResult = (
   return row[key] as SnatchResult | AttemptsResult | null;
 };
 
+const getDisciplineBasePoints = (row: CategoryOverallRow, code: string): number => {
+  const result = getDisciplineResult(row, code);
+  if (!result || result.points === null || result.points === undefined) {
+    return 0;
+  }
+  const value = Number(result.points);
+  return Number.isNaN(value) ? 0 : value;
+};
+
+const getDisciplineBonusPoints = (row: CategoryOverallRow, code: string): number | null => {
+  const total = row.discipline_points?.[code];
+  if (total === null || total === undefined) {
+    return null;
+  }
+  const base = getDisciplineBasePoints(row, code);
+  const bonus = total - base;
+  if (!Number.isFinite(bonus)) {
+    return null;
+  }
+  return Math.abs(bonus) < 1e-9 ? 0 : bonus;
+};
+
 const computePercentBw = (row: CategoryOverallRow, code: string): number | null => {
   const weight = row.player?.weight;
   if (!weight || weight <= 0) {
@@ -265,15 +287,6 @@ const useOverallColumns = (
       render: (value: number | null | undefined) => formatInteger(value),
       sorter: (a, b) => (a.tiebreak_points ?? 0) - (b.tiebreak_points ?? 0),
     },
-    {
-      title: "Dodatkowe punkty",
-      dataIndex: "bonus_points",
-      key: "bonus",
-      align: "center",
-      width: 120,
-      render: (value: number | null | undefined) => formatInteger(value),
-      sorter: (a, b) => (a.bonus_points ?? 0) - (b.bonus_points ?? 0),
-    },
     sumColumn,
   ];
 
@@ -392,6 +405,22 @@ const createDisciplineColumns = (code: string): ColumnsType<DisciplineRow> => {
     },
   } satisfies ColumnsType<DisciplineRow>[number];
 
+  const bonusColumn: ColumnsType<DisciplineRow>[number] = {
+    title: "Dodatkowe punkty",
+    key: `${code}-bonus`,
+    align: "right",
+    width: 150,
+    render: (_value: unknown, record) => {
+      const bonus = getDisciplineBonusPoints(record, code);
+      return bonus === null ? "-" : formatNumber(bonus, 2);
+    },
+    sorter: (a, b) => {
+      const left = getDisciplineBonusPoints(a, code) ?? 0;
+      const right = getDisciplineBonusPoints(b, code) ?? 0;
+      return left - right;
+    },
+  };
+
   const pointsColumn: ColumnsType<DisciplineRow>[number] = {
     title: "Punkty",
     key: `${code}-points`,
@@ -403,7 +432,7 @@ const createDisciplineColumns = (code: string): ColumnsType<DisciplineRow> => {
       (a.discipline_points?.[code] ?? 0) - (b.discipline_points?.[code] ?? 0),
   };
 
-  return [...baseColumns, resultColumn, pointsColumn];
+  return [...baseColumns, resultColumn, bonusColumn, pointsColumn];
 };
 
 const detailContainerStyle = (token: GlobalToken): CSSProperties => ({
