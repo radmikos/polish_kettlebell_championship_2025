@@ -36,15 +36,17 @@ class PullUpResult(BaseBWPoints):
         return max(attempts, default=0.0)
 
     @property
-    def points(self) -> float:
+    def points(self) -> float | None:
         ctx = self._ctx
         if not ctx:
-            return 0.0
+            return None
         best_attempt = float(self.best_attempt or 0.0)
         if best_attempt <= 0:
-            return 0.0
+            return None
         val = pull_up_points(ctx, best_attempt)
-        return round(val, 3) if val is not None else 0.0
+        if val is None:
+            return None
+        return round(val, 3)
 
     def __str__(self) -> str:
         return f"{self.player} · Pull-Up={self.points if self.points is not None else 'N/A'}"

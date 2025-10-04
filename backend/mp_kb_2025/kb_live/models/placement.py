@@ -74,12 +74,17 @@ class CategoryPlacement(models.Model):
 
     # --- punkty z uwzględnioną karą tiebreak (-0.5) ---
     @property
-    def points(self) -> float:
+    def points(self) -> float | None:
         base = self.base_points
         base_value = float(base) if base is not None else 0.0
         _general_bonus, discipline_bonuses = get_player_bonus_share(self.category, self.player_id)
         bonus_value = discipline_bonuses.get(self.discipline, 0.0)
+
+        has_points = base is not None or bool(bonus_value)
         total = base_value + bonus_value
+
         if self.category.tiebreaks_applied.filter(player=self.player).exists():
             total -= 0.5
-        return total
+            has_points = True
+
+        return total if has_points else None
