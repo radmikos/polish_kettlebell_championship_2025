@@ -45,19 +45,55 @@ class SportClubAdmin(admin.ModelAdmin):
 
 
 
+# --- Shared filters ---
+class PlayerCategoryListFilter(admin.SimpleListFilter):
+    title = _("Kategoria")
+    parameter_name = "player_category"
+
+    category_field_path = "player__categories"
+
+    def lookups(self, request, model_admin):
+        categories = Category.objects.order_by("name")
+        return [(str(category.pk), category.name) for category in categories]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if not value:
+            return queryset
+        try:
+            category_id = int(value)
+        except (TypeError, ValueError):
+            return queryset.none()
+        filter_key = f"{self.category_field_path}__id"
+        return queryset.filter(**{filter_key: category_id}).distinct()
+
+
 # --- Players ---
 @admin.register(Player)
 class PlayerAdmin(ImportExportModelAdmin):
     resource_classes = [PlayerImportResource]
     export_resource_classes = [PlayerExportResource]
-    list_display = ("surname", "name", "weight", "gender", "club", "categories_list")
+    list_display = ("surname", "name", "weight_display", "gender", "club", "categories_list")
     search_fields = ("surname", "name", "club__name", "categories__name")
     autocomplete_fields = ("club",)
     filter_horizontal = ("categories",)
 
+    class CategoriesListFilter(PlayerCategoryListFilter):
+        category_field_path = "categories"
+
+    list_filter = (CategoriesListFilter,)
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related("club").prefetch_related("categories")
+
+    def weight_display(self, obj):
+        if obj.weight and obj.weight > 0:
+            return f"{obj.weight:.1f}"
+        return "-"
+
+    weight_display.short_description = _("Waga (kg)")
+    weight_display.admin_order_field = "weight"
 
     def categories_list(self, obj):
         return ", ".join(obj.categories.values_list("name", flat=True)) or "-"
@@ -167,6 +203,7 @@ class _ResultExtraColumnsMixin:
 # --- NEW: mixin ograniczający wybór zawodnika tylko do kategorii zawierających daną dyscyplinę ---
 class _DisciplinePlayerFilterMixin:
     discipline_code: str | None = None  # należy ustawić w podklasie
+    list_filter = (PlayerCategoryListFilter,)
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
