@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .category import Category
+from .bonus import get_player_bonus_share
 from .choices import Discipline
 from .placement import CategoryPlacement
 from .player import Player
@@ -113,16 +114,15 @@ class CategoryOverallResult(models.Model):
         pts = self._points_map_from_player()
         allowed_set = set(allowed_disciplines)
 
+        general_bonus, discipline_bonuses = get_player_bonus_share(self.category, self.player_id)
+
         def normalized_points(key: str) -> float | None:
             if key not in allowed_set:
                 return None
             value = pts.get(key)
-            if value is None:
-                return 0.0
-            try:
-                return float(value)
-            except (TypeError, ValueError):
-                return 0.0
+            base = float(value) if value is not None else 0.0
+            bonus = discipline_bonuses.get(key, 0.0)
+            return base + bonus
 
         discipline_fields = [
             (Discipline.SNATCH, "snatch_points"),
@@ -140,18 +140,11 @@ class CategoryOverallResult(models.Model):
             if value is not None:
                 aggregated_points.append(float(value))
 
-        # Tiebreak flag (nie dodajemy do sumy punktów – osobne pole informacyjne)
+        # Kara tiebreak (odejmujemy 0.5 punktu od sumy końcowej)
         tb_exists = self.category.tiebreaks_applied.filter(player=self.player).exists()
-        self.tiebreak_points = 1.0 if tb_exists else 0.0
+        self.tiebreak_points = -0.5 if tb_exists else 0.0
 
-        bonus_entry = self.category.bonus_points_assigned.filter(player=self.player).first()
-        bonus_value: float = 0.0
-        if bonus_entry and bonus_entry.points is not None:
-            try:
-                bonus_value = float(bonus_entry.points)
-            except (TypeError, ValueError):
-                bonus_value = 0.0
-        self.bonus_points = bonus_value
+        self.bonus_points = general_bonus
 
         drop_worst = bool(getattr(self.category, "drop_worst_result", False))
 

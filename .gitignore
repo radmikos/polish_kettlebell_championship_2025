@@ -179,11 +179,6 @@ dist
 dist-ssr
 *.local
 
-
+backend/mp_kb_2025/kb_live/migrations/
 # Static files by collecstatic
-/backend/european_champonship_kettlebell/staticfiles/
-/backend/european_champonship_kettlebell/zawodnicy_part_1.csv
-/backend/european_champonship_kettlebell/zawodnicy_part_2.csv
-/backend/european_champonship_kettlebell/zawodnicy_part_3.csv
-/backend/european_champonship_kettlebell/zawodnicy_part_4.csv
-/backend/european_champonship_kettlebell/zawodnicy_part_5.csv
+

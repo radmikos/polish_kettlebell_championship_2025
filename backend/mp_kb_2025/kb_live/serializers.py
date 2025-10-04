@@ -14,6 +14,7 @@ from kb_live.models import (
     Player,
     SportClub,
 )
+from kb_live.models.bonus import get_player_bonus_share
 
 
 def _serialize_disciplines(category: Category) -> list[dict[str, str]]:
@@ -215,13 +216,13 @@ class CategoryPlacementSerializer(serializers.ModelSerializer):
         return obj.player_id in self._tiebreak_map()
 
     def get_points(self, obj: CategoryPlacement) -> float | None:
+        total = obj.points
         base_points = obj.base_points
         if base_points is None:
-            return None
-        points = float(base_points)
-        if self.get_tiebreak_applied(obj):
-            points += 1.0
-        return points
+            _general, discipline_bonus = get_player_bonus_share(obj.category, obj.player_id)
+            if not discipline_bonus.get(obj.discipline):
+                return None
+        return total
 
 
 class CategoryResultsSerializer(serializers.ModelSerializer):
@@ -308,7 +309,7 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
         }
 
     def get_tiebreak_applied(self, overall: CategoryOverallResult) -> bool:
-        return bool(overall.tiebreak_points and overall.tiebreak_points > 0)
+        return bool(overall.tiebreak_points)
 
     def get_placements(self, overall: CategoryOverallResult) -> list[dict[str, object]]:
         placements_map: Mapping[int, Mapping[str, CategoryPlacement]] = self.context.get("placements_map", {})
@@ -319,12 +320,17 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
 
         for code in discipline_order:
             placement: CategoryPlacement | None = player_entries.get(code) if isinstance(player_entries, Mapping) else None
+            total_points = getattr(placement, "points", None) if placement else None
             base_points = getattr(placement, "base_points", None) if placement else None
             points = None
-            if base_points is not None:
-                points = float(base_points)
-                if self.get_tiebreak_applied(overall):
-                    points += 1.0
+            if placement is not None:
+                if base_points is None:
+                    _general, discipline_bonus = get_player_bonus_share(placement.category, placement.player_id)
+                    has_bonus = bool(discipline_bonus.get(code))
+                    if has_bonus or total_points not in (None, 0.0):
+                        points = total_points
+                else:
+                    points = total_points
             data.append(
                 {
                     "discipline": code,
