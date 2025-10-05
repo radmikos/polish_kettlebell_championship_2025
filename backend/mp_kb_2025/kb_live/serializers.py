@@ -116,6 +116,7 @@ class PlayerDetailSerializer(PlayerSummarySerializer):
         return {
             "kettlebell_weight": result.kettlebell_weight,
             "repetitions": result.repetitions,
+            "total_lifted_weight": getattr(result, "total_lifted_weight", None),
             "points": getattr(result, "points", None),
             "place": getattr(result, "place", None),
         }
@@ -175,6 +176,8 @@ class PlayerDetailSerializer(PlayerSummarySerializer):
 class SnatchResultSerializer(serializers.Serializer):
     kettlebell_weight = serializers.FloatField(allow_null=True)
     repetitions = serializers.IntegerField(allow_null=True)
+    total_lifted_weight = serializers.FloatField(allow_null=True)
+    total = serializers.FloatField(source="total_lifted_weight", allow_null=True)
     points = serializers.FloatField(allow_null=True)
     place = serializers.IntegerField(allow_null=True)
 

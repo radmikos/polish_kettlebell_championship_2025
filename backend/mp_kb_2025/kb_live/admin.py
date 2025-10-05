@@ -209,6 +209,7 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
         "player",
         "repetitions",
         "kettlebell_weight",
+        "total_lifted_weight_display",
         "place",
         "best_attempt_display",
         "percent_bw_display",
@@ -219,6 +220,7 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
     list_select_related = ("player",)
     readonly_fields = (
         "place",
+        "total_lifted_weight_display",
         "points_display",
         "best_attempt_display",
         "percent_bw_display",
@@ -249,6 +251,13 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
     best_attempt_display.short_description = "Wynik (wzór)"
     # ordering for snatch: order by annotated best attempt value (kettlebell_weight)
     # admin_order_field assignments for the overridden methods are set below
+
+    def total_lifted_weight_display(self, obj: SnatchResult):
+        total = obj.total_lifted_weight
+        return round(total, 1) if total is not None else "-"
+
+    total_lifted_weight_display.short_description = "Total (kg)"
+    total_lifted_weight_display.admin_order_field = "total_lifted_weight"
 
 
 # Attempts based base admin
