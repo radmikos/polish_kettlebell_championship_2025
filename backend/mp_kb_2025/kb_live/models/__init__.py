@@ -12,6 +12,7 @@ from .sports_club import SportClub
 from .squat import SquatResult
 from .tgu import TGUResult
 from .tiebreak import PlayerCategoryTiebreak
+from .participation import PlayerCategoryParticipation
 
 __all__ = [
     "Discipline",
@@ -20,6 +21,7 @@ __all__ = [
     "Category",
     "Player",
     "PlayerCategoryTiebreak",
+    "PlayerCategoryParticipation",
     "BaseBWPoints",
     "SnatchResult",
     "PistolResult",
