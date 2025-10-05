@@ -117,12 +117,20 @@ def rank_category_disciplines(category_id: int, disciplines: Iterable[str] | Non
         ordered = _sorted_rows_for_discipline(discipline_rows)
         prev_points = None
         current_place = 0
+        no_points_place: int | None = None
 
         for idx, row in enumerate(ordered, start=1):
             pts = row.points
             if pts is None:
-                if row.position is not None:
-                    row.position = None
+                if current_place == 0:
+                    target_place = 1
+                else:
+                    if no_points_place is None:
+                        no_points_place = current_place + 1
+                    target_place = no_points_place
+
+                if row.position != target_place:
+                    row.position = target_place
                     to_update.append(row)
                     if row.player_id:
                         affected_players.add(row.player_id)
@@ -131,8 +139,8 @@ def rank_category_disciplines(category_id: int, disciplines: Iterable[str] | Non
                 if attr_model:
                     attr_name, model = attr_model
                     result = getattr(row.player, attr_name, None)
-                    if result and result.place is not None:
-                        result.place = None
+                    if result and result.place != target_place:
+                        result.place = target_place
                         result_updates[model][result.pk] = result
                 continue
 
