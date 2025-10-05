@@ -396,6 +396,20 @@ const createDisciplineColumns = (code: string): ColumnsType<DisciplineRow> => {
       (a.discipline_points?.[code] ?? 0) - (b.discipline_points?.[code] ?? 0),
   };
 
+  if (code === "snatch") {
+    const totalColumn: ColumnsType<DisciplineRow>[number] = {
+      title: "Total",
+      key: `${code}-total`,
+      align: "right" as const,
+      width: 110,
+      render: (_value: unknown, record: DisciplineRow) => {
+        const result = getDisciplineResult(record, code) as SnatchResult | null;
+        const total = result?.total ?? (result?.kettlebell_weight && result?.repetitions ? result.kettlebell_weight * result.repetitions : null);
+        return total !== null ? formatNumber(total, 1) : "-";
+      },
+    };
+    return [...baseColumns, resultColumn, totalColumn, pointsColumn];
+  }
   return [...baseColumns, resultColumn, pointsColumn];
 };
 
@@ -465,6 +479,7 @@ const renderSnatchDetails = (
     );
   }
 
+  const total = result?.total ?? (result?.kettlebell_weight && result?.repetitions ? result.kettlebell_weight * result.repetitions : null);
   return (
     <Space key={key} direction="vertical" size={8} style={detailContainerStyle(token)}>
       <Text strong style={detailHeaderStyle}>
@@ -472,10 +487,9 @@ const renderSnatchDetails = (
       </Text>
       <Space wrap size={[12, 8]} style={detailMetaWrapStyle}>
         <Text type="secondary">Miejsce: {formatInteger(result.place)}</Text>
-        <Text type="secondary">
-          Waga kettla: {formatNumber(result.kettlebell_weight, 1)} kg
-        </Text>
+        <Text type="secondary">Waga kettla: {formatNumber(result.kettlebell_weight, 1)} kg</Text>
         <Text type="secondary">Powtórzenia: {formatInteger(result.repetitions)}</Text>
+        <Text type="secondary">Total: {total !== null ? formatNumber(total, 1) : "-"}</Text>
         <Text type="secondary">Punkty: {formatNumber(result.points, 2)}</Text>
       </Space>
     </Space>
