@@ -114,15 +114,6 @@ const getDisciplineResult = (
   return row[key] as SnatchResult | AttemptsResult | null;
 };
 
-const getDisciplineBasePoints = (row: CategoryOverallRow, code: string): number => {
-  const result = getDisciplineResult(row, code);
-  if (!result || result.points === null || result.points === undefined) {
-    return 0;
-  }
-  const value = Number(result.points);
-  return Number.isNaN(value) ? 0 : value;
-};
-
 
 const computePercentBw = (row: CategoryOverallRow, code: string): number | null => {
   const weight = row.player?.weight;
