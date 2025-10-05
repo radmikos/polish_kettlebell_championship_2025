@@ -10,7 +10,6 @@ from kb_live.models import (
     Discipline,
     PistolResult,
     Player,
-    PlayerCategoryBonus,
     PlayerCategoryTiebreak,
     PullUpResult,
     SeeSawPressResult,
@@ -69,7 +68,6 @@ def cleanup_player_results(player: Player, category_ids: Iterable[int] | None = 
     qs_overall.delete()
     CategoryPlacement.objects.filter(**filter_kwargs).delete()
     PlayerCategoryTiebreak.objects.filter(**filter_kwargs).delete()
-    PlayerCategoryBonus.objects.filter(**filter_kwargs).delete()
 
     remaining_allowed = _allowed_discipline_codes(player)
     for code, model in DISCIPLINE_MODEL_MAP.items():
@@ -170,13 +168,3 @@ def tiebreak_deleted(sender, instance: PlayerCategoryTiebreak, **kwargs):
     _schedule_overall_refresh(instance.category_id, [instance.player_id])
 
 
-@receiver(post_save, sender=PlayerCategoryBonus)
-def bonus_saved(sender, instance: PlayerCategoryBonus, **kwargs):
-    if kwargs.get("raw"):
-        return
-    _schedule_overall_refresh(instance.category_id, [instance.player_id])
-
-
-@receiver(post_delete, sender=PlayerCategoryBonus)
-def bonus_deleted(sender, instance: PlayerCategoryBonus, **kwargs):
-    _schedule_overall_refresh(instance.category_id, [instance.player_id])

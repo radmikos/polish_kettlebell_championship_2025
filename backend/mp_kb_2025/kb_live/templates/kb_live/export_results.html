@@ -36,7 +36,6 @@
                     <th>Pkt {{ col_info.name }}</th>
                 {% endfor %}
                 <th>Pkt Tiebreak</th>
-                <th>Pkt dodatkowe</th>
                 <th>Suma Pkt</th>
             </tr>
         </thead>
@@ -57,7 +56,6 @@
                 {% endfor %}
 
                 <td>{% if result.tiebreak_points is not None %}{{ result.tiebreak_points|floatformat:"1" }}{% else %}<span class="no-result">-</span>{% endif %}</td>
-                <td>{% if result.bonus_points is not None %}{{ result.bonus_points|floatformat:"1" }}{% else %}<span class="no-result">-</span>{% endif %}</td>
                 <td class="points final-points">{% if result.total_points is not None %}{{ result.total_points|floatformat:"1" }}{% else %}<span class="no-result">-</span>{% endif %}</td>
             </tr>
             {% endwith %}

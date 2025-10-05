@@ -4,7 +4,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .category import Category
-from .bonus import get_player_bonus_share
 from .choices import Discipline
 from .placement import CategoryPlacement
 from .player import Player
@@ -114,15 +113,12 @@ class CategoryOverallResult(models.Model):
         pts = self._points_map_from_player()
         allowed_set = set(allowed_disciplines)
 
-        general_bonus, discipline_bonuses = get_player_bonus_share(self.category, self.player_id)
-
         def normalized_points(key: str) -> float | None:
             if key not in allowed_set:
                 return None
             value = pts.get(key)
             base = float(value) if value is not None else 0.0
-            bonus = discipline_bonuses.get(key, 0.0)
-            return base + bonus
+            return base
 
         discipline_fields = [
             (Discipline.SNATCH, "snatch_points"),
@@ -144,7 +140,8 @@ class CategoryOverallResult(models.Model):
         tb_exists = self.category.tiebreaks_applied.filter(player=self.player).exists()
         self.tiebreak_points = -0.5 if tb_exists else 0.0
 
-        self.bonus_points = general_bonus
+        # Dodatkowe punkty wyłączone – zawsze 0.0
+        self.bonus_points = 0.0
 
         drop_worst = bool(getattr(self.category, "drop_worst_result", False))
 
@@ -192,7 +189,7 @@ class CategoryOverallResult(models.Model):
 
         placement_value = self.placement_points
         tiebreak_value = self.tiebreak_points or 0.0
-        bonus_value = self.bonus_points or 0.0
+        bonus_value = 0.0
 
         if placement_value is not None:
             self.total_points = float(placement_value + tiebreak_value + bonus_value)

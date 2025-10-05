@@ -1,5 +1,4 @@
 from .bases import BaseBWPoints
-from .bonus import PlayerCategoryBonus
 from .category import Category
 from .choices import DISCIPLINE_NAMES, Discipline
 from .overall import CategoryOverallResult
@@ -20,7 +19,6 @@ __all__ = [
     "SportClub",
     "Category",
     "Player",
-    "PlayerCategoryBonus",
     "PlayerCategoryTiebreak",
     "BaseBWPoints",
     "SnatchResult",

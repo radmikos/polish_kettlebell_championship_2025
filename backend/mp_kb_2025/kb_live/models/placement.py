@@ -3,7 +3,6 @@ from django.utils.translation import gettext_lazy as _
 
 from .category import Category
 from .choices import Discipline
-from .bonus import get_player_bonus_share
 from .player import Player
 
 
@@ -76,15 +75,10 @@ class CategoryPlacement(models.Model):
     @property
     def points(self) -> float | None:
         base = self.base_points
-        base_value = float(base) if base is not None else 0.0
-        _general_bonus, discipline_bonuses = get_player_bonus_share(self.category, self.player_id)
-        bonus_value = discipline_bonuses.get(self.discipline, 0.0)
+        if base is None:
+            return None
 
-        has_points = base is not None or bool(bonus_value)
-        total = base_value + bonus_value
-
+        total = float(base)
         if self.category.tiebreaks_applied.filter(player=self.player).exists():
             total -= 0.5
-            has_points = True
-
-        return total if has_points else None
+        return total

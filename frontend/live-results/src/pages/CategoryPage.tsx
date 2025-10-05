@@ -123,18 +123,6 @@ const getDisciplineBasePoints = (row: CategoryOverallRow, code: string): number 
   return Number.isNaN(value) ? 0 : value;
 };
 
-const getDisciplineBonusPoints = (row: CategoryOverallRow, code: string): number | null => {
-  const total = row.discipline_points?.[code];
-  if (total === null || total === undefined) {
-    return null;
-  }
-  const base = getDisciplineBasePoints(row, code);
-  const bonus = total - base;
-  if (!Number.isFinite(bonus)) {
-    return null;
-  }
-  return Math.abs(bonus) < 1e-9 ? 0 : bonus;
-};
 
 const computePercentBw = (row: CategoryOverallRow, code: string): number | null => {
   const weight = row.player?.weight;
@@ -405,21 +393,6 @@ const createDisciplineColumns = (code: string): ColumnsType<DisciplineRow> => {
     },
   } satisfies ColumnsType<DisciplineRow>[number];
 
-  const bonusColumn: ColumnsType<DisciplineRow>[number] = {
-    title: "Dodatkowe punkty",
-    key: `${code}-bonus`,
-    align: "right",
-    width: 150,
-    render: (_value: unknown, record) => {
-      const bonus = getDisciplineBonusPoints(record, code);
-      return bonus === null ? "-" : formatNumber(bonus, 2);
-    },
-    sorter: (a, b) => {
-      const left = getDisciplineBonusPoints(a, code) ?? 0;
-      const right = getDisciplineBonusPoints(b, code) ?? 0;
-      return left - right;
-    },
-  };
 
   const pointsColumn: ColumnsType<DisciplineRow>[number] = {
     title: "Punkty",
@@ -432,7 +405,7 @@ const createDisciplineColumns = (code: string): ColumnsType<DisciplineRow> => {
       (a.discipline_points?.[code] ?? 0) - (b.discipline_points?.[code] ?? 0),
   };
 
-  return [...baseColumns, resultColumn, bonusColumn, pointsColumn];
+  return [...baseColumns, resultColumn, pointsColumn];
 };
 
 const detailContainerStyle = (token: GlobalToken): CSSProperties => ({
