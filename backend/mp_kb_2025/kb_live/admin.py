@@ -27,6 +27,7 @@ from .models import (
 from import_export.admin import ImportExportModelAdmin
 from .resources import PlayerImportResource, PlayerExportResource
 from .models.overall import CategoryOverallResult
+from .models.participation import PlayerCategoryParticipation
 from .services.ranking import rank_category_overall
 from .models.choices import DISCIPLINE_NAMES
 
@@ -81,6 +82,34 @@ class PlayerAdmin(ImportExportModelAdmin):
         category_field_path = "categories"
 
     list_filter = (CategoriesListFilter,)
+
+    class ParticipationInline(admin.TabularInline):
+        model = PlayerCategoryParticipation
+        extra = 0
+        can_delete = False
+        verbose_name = _("Udział w konkurencjach (kategoria)")
+        verbose_name_plural = _("Udziały w konkurencjach (kategorie)")
+        readonly_fields = ("category",)
+
+        def get_formset(self, request, obj=None, **kwargs):
+            from .forms import PlayerCategoryParticipationForm
+            # Ensure participation rows exist for all player's categories
+            if obj and getattr(obj, "pk", None):
+                from .models.participation import PlayerCategoryParticipation
+                cats = list(obj.categories.values_list("id", flat=True))
+                for cat_id in cats:
+                    PlayerCategoryParticipation.objects.get_or_create(player=obj, category_id=cat_id)
+            kwargs = kwargs or {}
+            kwargs["form"] = PlayerCategoryParticipationForm
+            return super().get_formset(request, obj, **kwargs)
+
+        def has_add_permission(self, request, obj=None):
+            return False
+
+        def has_delete_permission(self, request, obj=None):
+            return False
+
+    inlines = [ParticipationInline]
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

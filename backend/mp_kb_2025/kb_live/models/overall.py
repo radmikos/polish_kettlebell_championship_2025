@@ -7,6 +7,7 @@ from .category import Category
 from .choices import Discipline
 from .placement import CategoryPlacement
 from .player import Player
+from .participation import PlayerCategoryParticipation
 
 
 class CategoryOverallResult(models.Model):
@@ -108,6 +109,28 @@ class CategoryOverallResult(models.Model):
             out[r.discipline] = r.position
         return out
 
+    def _last_place_map(self) -> dict[str, int | None]:
+        """Zwraca aktualnie najgorsze (najwyższe) miejsce w kategorii dla każdej konkurencji."""
+        from django.db.models import Max
+
+        allowed = self._allowed_disciplines()
+        if not allowed:
+            return {}
+
+        qs = (
+            CategoryPlacement.objects.filter(category=self.category, discipline__in=allowed)
+            .values("discipline")
+            .annotate(max_pos=Max("position"))
+        )
+        result: dict[str, int | None] = {code: None for code in allowed}
+        for row in qs:
+            result[str(row["discipline"])] = row["max_pos"]
+        # Jeśli dla danej konkurencji nie istnieją jeszcze miejsca, przyjmij 1 jako „ostatnie”
+        for code in allowed:
+            if result.get(code) is None:
+                result[code] = 1
+        return result
+
     def recompute(self, save: bool = True) -> None:
         allowed_disciplines = self._allowed_disciplines()
         pts = self._points_map_from_player()
@@ -146,6 +169,15 @@ class CategoryOverallResult(models.Model):
         drop_worst = bool(getattr(self.category, "drop_worst_result", False))
 
         placements = self._placements_map()
+        last_places = self._last_place_map()
+
+        # Udział zawodnika w konkurencjach w ramach kategorii (domyślnie wszystko True)
+        participation = None
+        try:
+            participation = PlayerCategoryParticipation.objects.get(player=self.player, category=self.category)
+            participation_map = participation.as_map()
+        except PlayerCategoryParticipation.DoesNotExist:
+            participation_map = {d: True for d in allowed_disciplines}
 
         place_fields = [
             (Discipline.SNATCH, "snatch_place"),
@@ -158,11 +190,20 @@ class CategoryOverallResult(models.Model):
 
         place_entries: list[tuple[str, int]] = []
         for code, attr_name in place_fields:
-            value = placements.get(code)
-            if isinstance(value, int) and value > 0:
-                setattr(self, attr_name, value)
-                if code in allowed_set:
-                    place_entries.append((code, value))
+            effective_value: int | None = None
+            if code in allowed_set:
+                participate = participation_map.get(code, True)
+                if participate:
+                    value = placements.get(code)
+                    if isinstance(value, int) and value > 0:
+                        effective_value = value
+                else:
+                    # Nie bierze udziału → przypisz aktualnie ostatnie miejsce
+                    effective_value = last_places.get(code)
+
+            if isinstance(effective_value, int) and effective_value > 0:
+                setattr(self, attr_name, effective_value)
+                place_entries.append((code, effective_value))
             else:
                 setattr(self, attr_name, None)
 
