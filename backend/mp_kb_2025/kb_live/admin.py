@@ -16,7 +16,6 @@ from .models import (
     Discipline,
     PistolResult,
     Player,
-    PlayerCategoryBonus,
     PlayerCategoryTiebreak,
     PullUpResult,
     SeeSawPressResult,
@@ -110,49 +109,6 @@ class PlayerCategoryTiebreakAdmin(admin.ModelAdmin):
     list_select_related = ("player", "category")
 
 
-class PlayerCategoryBonusForm(forms.ModelForm):
-    class Meta:
-        model = PlayerCategoryBonus
-        fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["discipline"].required = True
-        category_obj = None
-        raw_category = None
-        if self.data:
-            raw_category = self.data.get("category")
-        if not raw_category:
-            raw_category = self.initial.get("category") if isinstance(self.initial, dict) else None
-        if not raw_category and getattr(self.instance, "category_id", None):
-            raw_category = self.instance.category_id
-        if raw_category:
-            try:
-                category_obj = Category.objects.get(pk=raw_category)
-            except (Category.DoesNotExist, ValueError, TypeError):
-                category_obj = getattr(self.instance, "category", None)
-        else:
-            category_obj = getattr(self.instance, "category", None)
-        if category_obj:
-            allowed = set(category_obj.get_disciplines() or [])
-            if allowed:
-                field = self.fields["discipline"]
-                base_choices = list(field.choices)
-                filtered = [(value, label) for value, label in base_choices if value in ("", None) or value in allowed]
-                if filtered:
-                    field.choices = filtered
-
-
-
-@admin.register(PlayerCategoryBonus)
-class PlayerCategoryBonusAdmin(admin.ModelAdmin):
-    form = PlayerCategoryBonusForm
-    list_display = ("player", "category", "discipline", "points")
-    search_fields = ("player__surname", "player__name", "category__name")
-    list_filter = ("category", "discipline")
-    autocomplete_fields = ("player", "category")
-    list_select_related = ("player", "category")
-
 
 # Shared mixin for extra columns
 class _ResultExtraColumnsMixin:
@@ -211,7 +167,6 @@ class _DisciplinePlayerFilterMixin:
             # Gracze posiadający przynajmniej jedną kategorię z tą dyscypliną
             q = Q(categories__disciplines__contains=[self.discipline_code])
             if obj and obj.player_id:
-                # zachowaj aktualnego zawodnika nawet jeśli usunięto mu kategorię
                 q = Q(pk=obj.player_id) | q
             form.base_fields["player"].queryset = Player.objects.filter(q).distinct().order_by("surname", "name")
         return form
@@ -377,7 +332,6 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "pistol_points_disp",
         "pull_up_place_disp",
         "pull_up_points_disp",
-        "bonus_points_disp",
         "placement_points_disp",
         "total_points_disp",
         "final_position_disp",
@@ -400,7 +354,6 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "pistol_place",
         "pull_up_place",
         "tiebreak_points",
-        "bonus_points",
         "total_points",
         "placement_points",
         "counted_disciplines",
@@ -534,12 +487,6 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
 
     pull_up_place_disp.short_description = "Miejsce Pull-Up"
     pull_up_place_disp.admin_order_field = "pull_up_place"
-
-    def bonus_points_disp(self, obj):
-        return self._fmt(obj.bonus_points)
-
-    bonus_points_disp.short_description = "Punkty dodatkowe"
-    bonus_points_disp.admin_order_field = "bonus_points"
 
     def placement_points_disp(self, obj):
         return self._fmt(obj.placement_points)
