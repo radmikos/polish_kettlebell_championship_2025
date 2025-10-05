@@ -209,20 +209,30 @@ class CategoryOverallResult(models.Model):
 
         counted_entries = list(place_entries)
 
-        if drop_worst and len(counted_entries) > 1:
-            worst_candidate: tuple[int, tuple[str, int]] | None = None
-            for idx, entry in enumerate(counted_entries):
-                code, place_value = entry
-                if code == Discipline.SNATCH:
-                    continue
-                if worst_candidate is None or place_value > worst_candidate[1][1]:
-                    worst_candidate = (idx, entry)
-            if worst_candidate is not None:
-                counted_entries.pop(worst_candidate[0])
+        counted_codes = [code for code, _ in counted_entries]
+        snatch_entries = [entry for entry in counted_entries if entry[0] == Discipline.SNATCH]
+        non_snatch_entries = [entry for entry in counted_entries if entry[0] != Discipline.SNATCH]
+        total_counted = len(counted_entries)
 
-        if counted_entries:
-            counted_places = [place for _code, place in counted_entries]
-            self.counted_disciplines = len(counted_places)
+        if total_counted == 5:
+            if len(non_snatch_entries) > 0:
+                worst_idx = None
+                worst_value = None
+                for idx, entry in enumerate(non_snatch_entries):
+                    code, place_value = entry
+                    if worst_value is None or place_value > worst_value:
+                        worst_value = place_value
+                        worst_idx = idx
+                filtered_non_snatch = [e for i, e in enumerate(non_snatch_entries) if i != worst_idx]
+                final_entries = snatch_entries + filtered_non_snatch
+            else:
+                final_entries = counted_entries
+        else:
+            final_entries = counted_entries
+
+        if final_entries:
+            counted_places = [place for _code, place in final_entries]
+            self.counted_disciplines = len(final_entries)
             self.placement_points = float(sum(counted_places))
         else:
             self.counted_disciplines = 0
