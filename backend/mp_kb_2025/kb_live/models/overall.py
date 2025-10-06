@@ -182,9 +182,6 @@ class CategoryOverallResult(models.Model):
         if Discipline.SNATCH in allowed_set:
             participation_map[Discipline.SNATCH] = True
 
-        selected_codes = [code for code in allowed_disciplines if participation_map.get(code, True)]
-        selected_count = len(selected_codes)
-
         place_fields = [
             (Discipline.SNATCH, "snatch_place"),
             (Discipline.TGU, "tgu_place"),
@@ -194,52 +191,60 @@ class CategoryOverallResult(models.Model):
             (Discipline.PULL_UP, "pull_up_place"),
         ]
 
+        selected_codes = [code for code in allowed_disciplines if participation_map.get(code, True)]
+        selected_count = len(selected_codes)
+
+        ordered_allowed = [code for code, _field in place_fields if code in allowed_set]
+
+        if selected_count >= 5:
+            counted_codes = ordered_allowed
+        elif selected_count == 4:
+            counted_codes = []
+            for code in ordered_allowed:
+                if code == Discipline.SNATCH or code in selected_codes:
+                    counted_codes.append(code)
+        else:
+            counted_codes = ordered_allowed
+
+        counted_set = set(counted_codes)
+
         place_entries: list[tuple[str, int]] = []
         for code, attr_name in place_fields:
             if code not in allowed_set:
                 setattr(self, attr_name, None)
                 continue
 
-            participate = participation_map.get(code, True)
-            if participate:
-                effective_value: int | None = None
-                value = placements.get(code)
-                if isinstance(value, int) and value > 0:
-                    effective_value = value
-                else:
-                    fallback = last_places.get(code)
-                    if isinstance(fallback, int) and fallback > 0:
-                        effective_value = fallback
+            placement_value = placements.get(code)
+            fallback_value = last_places.get(code)
 
-                if effective_value is not None:
-                    setattr(self, attr_name, effective_value)
+            effective_value: int | None = None
+            if isinstance(placement_value, int) and placement_value > 0:
+                effective_value = placement_value
+            elif isinstance(fallback_value, int) and fallback_value > 0:
+                effective_value = fallback_value
+
+            if effective_value is not None:
+                setattr(self, attr_name, effective_value)
+                if code in counted_set:
                     place_entries.append((code, effective_value))
-                else:
-                    setattr(self, attr_name, None)
             else:
-                penalty_value = last_places.get(code)
-                if isinstance(penalty_value, int) and penalty_value > 0:
-                    setattr(self, attr_name, penalty_value)
-                else:
-                    setattr(self, attr_name, None)
+                setattr(self, attr_name, None)
 
-        counted_entries = list(place_entries)
-
-        snatch_entries = [entry for entry in counted_entries if entry[0] == Discipline.SNATCH]
-        non_snatch_entries = [entry for entry in counted_entries if entry[0] != Discipline.SNATCH]
-
-        if drop_worst_enabled and selected_count >= 5 and len(counted_entries) >= 5 and len(non_snatch_entries) > 0:
+        if drop_worst_enabled and len(counted_set) >= 5 and len(place_entries) >= 5:
             worst_idx = None
             worst_value = None
-            for idx, entry in enumerate(non_snatch_entries):
-                code, place_value = entry
+            for idx, (code, place_value) in enumerate(place_entries):
+                if code == Discipline.SNATCH:
+                    continue
                 if worst_value is None or place_value > worst_value:
                     worst_value = place_value
                     worst_idx = idx
-            filtered_non_snatch = [e for i, e in enumerate(non_snatch_entries) if i != worst_idx]
-            final_entries = snatch_entries + filtered_non_snatch
+            if worst_idx is not None:
+                final_entries = [entry for idx, entry in enumerate(place_entries) if idx != worst_idx]
+            else:
+                final_entries = place_entries
         else:
-            final_entries = counted_entries
+            final_entries = place_entries
 
         if final_entries:
             counted_places = [place for _code, place in final_entries]
