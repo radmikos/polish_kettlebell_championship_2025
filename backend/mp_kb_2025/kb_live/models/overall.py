@@ -233,7 +233,7 @@ class CategoryOverallResult(models.Model):
             else:
                 setattr(self, attr_name, None)
 
-        if drop_worst_enabled and len(counted_set) >= 5 and len(place_entries) >= 5:
+        if drop_worst_enabled and selected_count >= 5 and len(place_entries) >= 5:
             worst_idx = None
             worst_value = None
             for idx, (code, place_value) in enumerate(place_entries):
