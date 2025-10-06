@@ -166,7 +166,7 @@ class CategoryOverallResult(models.Model):
         # Dodatkowe punkty wyłączone – zawsze 0.0
         self.bonus_points = 0.0
 
-        drop_worst = bool(getattr(self.category, "drop_worst_result", False))
+        drop_worst_enabled = bool(getattr(self.category, "drop_worst_result", False))
 
         placements = self._placements_map()
         last_places = self._last_place_map()
@@ -179,6 +179,12 @@ class CategoryOverallResult(models.Model):
         except PlayerCategoryParticipation.DoesNotExist:
             participation_map = {d: True for d in allowed_disciplines}
 
+        if Discipline.SNATCH in allowed_set:
+            participation_map[Discipline.SNATCH] = True
+
+        selected_codes = [code for code in allowed_disciplines if participation_map.get(code, True)]
+        selected_count = len(selected_codes)
+
         place_fields = [
             (Discipline.SNATCH, "snatch_place"),
             (Discipline.TGU, "tgu_place"),
@@ -190,43 +196,40 @@ class CategoryOverallResult(models.Model):
 
         place_entries: list[tuple[str, int]] = []
         for code, attr_name in place_fields:
-            effective_value: int | None = None
-            if code in allowed_set:
-                participate = participation_map.get(code, True)
-                if participate:
-                    value = placements.get(code)
-                    if isinstance(value, int) and value > 0:
-                        effective_value = value
-                else:
-                    # Nie bierze udziału → przypisz aktualnie ostatnie miejsce
-                    effective_value = last_places.get(code)
-
-            if isinstance(effective_value, int) and effective_value > 0:
-                setattr(self, attr_name, effective_value)
-                place_entries.append((code, effective_value))
-            else:
+            if code not in allowed_set:
                 setattr(self, attr_name, None)
+                continue
+
+            participate = participation_map.get(code, True)
+            if participate:
+                value = placements.get(code)
+                if isinstance(value, int) and value > 0:
+                    setattr(self, attr_name, value)
+                    place_entries.append((code, value))
+                else:
+                    setattr(self, attr_name, None)
+            else:
+                penalty_value = last_places.get(code)
+                if isinstance(penalty_value, int) and penalty_value > 0:
+                    setattr(self, attr_name, penalty_value)
+                else:
+                    setattr(self, attr_name, None)
 
         counted_entries = list(place_entries)
 
-        counted_codes = [code for code, _ in counted_entries]
         snatch_entries = [entry for entry in counted_entries if entry[0] == Discipline.SNATCH]
         non_snatch_entries = [entry for entry in counted_entries if entry[0] != Discipline.SNATCH]
-        total_counted = len(counted_entries)
 
-        if total_counted == 5:
-            if len(non_snatch_entries) > 0:
-                worst_idx = None
-                worst_value = None
-                for idx, entry in enumerate(non_snatch_entries):
-                    code, place_value = entry
-                    if worst_value is None or place_value > worst_value:
-                        worst_value = place_value
-                        worst_idx = idx
-                filtered_non_snatch = [e for i, e in enumerate(non_snatch_entries) if i != worst_idx]
-                final_entries = snatch_entries + filtered_non_snatch
-            else:
-                final_entries = counted_entries
+        if drop_worst_enabled and selected_count >= 5 and len(counted_entries) >= 5 and len(non_snatch_entries) > 0:
+            worst_idx = None
+            worst_value = None
+            for idx, entry in enumerate(non_snatch_entries):
+                code, place_value = entry
+                if worst_value is None or place_value > worst_value:
+                    worst_value = place_value
+                    worst_idx = idx
+            filtered_non_snatch = [e for i, e in enumerate(non_snatch_entries) if i != worst_idx]
+            final_entries = snatch_entries + filtered_non_snatch
         else:
             final_entries = counted_entries
 
