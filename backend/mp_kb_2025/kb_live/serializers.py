@@ -256,7 +256,7 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
         )
         read_only_fields = fields
 
-    def _attempts_payload(self, obj) -> dict[str, float | None] | None:
+    def _attempts_payload(self, obj) -> dict[str, float | int | None] | None:
         return AttemptsResultSerializer(
             {
                 "attempt_1": getattr(obj, "attempt_1", None),
@@ -264,6 +264,7 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
                 "attempt_3": getattr(obj, "attempt_3", None),
                 "best_attempt": getattr(obj, "best_attempt", None),
                 "points": getattr(obj, "points", None),
+                "place": getattr(obj, "place", None),
             }
         ).data if obj else None
 
