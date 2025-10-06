@@ -191,11 +191,14 @@ class CategoryOverallResult(models.Model):
             (Discipline.PULL_UP, "pull_up_place"),
         ]
 
-        selected_codes = [code for code in allowed_disciplines if participation_map.get(code, True)]
+        ordered_allowed = [code for code, _field in place_fields if code in allowed_set]
+
+        selected_codes = [code for code in ordered_allowed if participation_map.get(code, True)]
+        if not selected_codes:
+            selected_codes = list(ordered_allowed)
+
         selected_set = set(selected_codes)
         selected_count = len(selected_codes)
-
-        ordered_allowed = [code for code, _field in place_fields if code in allowed_set]
 
         counted_codes: list[str]
         if selected_count >= 5:
