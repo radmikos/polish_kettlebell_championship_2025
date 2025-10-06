@@ -192,20 +192,21 @@ class CategoryOverallResult(models.Model):
         ]
 
         selected_codes = [code for code in allowed_disciplines if participation_map.get(code, True)]
+        selected_set = set(selected_codes)
         selected_count = len(selected_codes)
 
         ordered_allowed = [code for code, _field in place_fields if code in allowed_set]
 
+        counted_codes: list[str]
         if selected_count >= 5:
             counted_codes = ordered_allowed
-        elif selected_count == 4:
+        else:
             counted_codes = []
             for code in ordered_allowed:
-                if code == Discipline.SNATCH or code in selected_codes:
+                if code == Discipline.SNATCH or code in selected_set:
                     counted_codes.append(code)
-        else:
-            counted_codes = ordered_allowed
 
+        counted_codes = list(dict.fromkeys(counted_codes))
         counted_set = set(counted_codes)
 
         place_entries: list[tuple[str, int]] = []
