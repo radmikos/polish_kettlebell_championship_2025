@@ -200,11 +200,13 @@ class CategoryOverallResult(models.Model):
         counted_codes: list[str]
         if selected_count >= 5:
             counted_codes = ordered_allowed
-        else:
+        elif selected_count == 4:
             counted_codes = []
             for code in ordered_allowed:
                 if code == Discipline.SNATCH or code in selected_set:
                     counted_codes.append(code)
+        else:
+            counted_codes = ordered_allowed
 
         counted_codes = list(dict.fromkeys(counted_codes))
         counted_set = set(counted_codes)
