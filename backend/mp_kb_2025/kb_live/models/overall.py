@@ -202,10 +202,18 @@ class CategoryOverallResult(models.Model):
 
             participate = participation_map.get(code, True)
             if participate:
+                effective_value: int | None = None
                 value = placements.get(code)
                 if isinstance(value, int) and value > 0:
-                    setattr(self, attr_name, value)
-                    place_entries.append((code, value))
+                    effective_value = value
+                else:
+                    fallback = last_places.get(code)
+                    if isinstance(fallback, int) and fallback > 0:
+                        effective_value = fallback
+
+                if effective_value is not None:
+                    setattr(self, attr_name, effective_value)
+                    place_entries.append((code, effective_value))
                 else:
                     setattr(self, attr_name, None)
             else:
