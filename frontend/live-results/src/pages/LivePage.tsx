@@ -11,9 +11,8 @@ import { Card, Space, Flex, Button, Typography, theme, Grid, Empty } from "antd"
 // ];
 
 const rawList: string[] = [
-  // TODO: replace these example links with your actual YouTube links or ids
-  "https://www.youtube.com/embed/dQw4w9WgXcQ?si=MtK3vPJ4V3EXJKuA",
-  "https://www.youtube.com/embed/dQw4w9WgXcQ?si=MtK3vPJ4V3EXJKuA",
+  "https://www.youtube.com/embed/HcdxoIvr8IY?si=m9V1_l4jYikd7YXu",
+  "https://www.youtube.com/embed/RATDCky-obM?si=Luqv7HK8Y8pVaAkZ",
 ];
 
 type ParsedVideo = {

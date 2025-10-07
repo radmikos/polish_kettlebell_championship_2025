@@ -42,6 +42,10 @@ const startListDefinitions: StartListDefinition[] = [
     categories: ["Amator M85", "Junior M"],
   },
   {
+    label: "Amator M+85",
+    categories: ["Amator +85"],
+  },
+  {
     label: "PRO K65 + PRO K+65",
     categories: ["PRO K65", "PRO K+65"],
   },
