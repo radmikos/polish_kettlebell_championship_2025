@@ -26,7 +26,7 @@ export type StartListsOutletContext = {
   entries: StartListEntry[];
 };
 
-const buildStartListAssetHref = (slug: string): string => `/start-lists/${slug}.jpg`;
+const buildStartListAssetHref = (slug: string): string => `/start-lists/${slug}.pdf`;
 
 const startListDefinitions: StartListDefinition[] = [
   {

@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useOutletContext, useParams } from "react-router-dom";
-import { Alert, Flex, Grid, Image, Space, Typography, theme, Button } from "antd";
+import { Alert, Flex, Grid, Space, Typography, theme, Button } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 import type { StartListsOutletContext } from "./StartListsPage";
 
@@ -12,7 +12,6 @@ const StartListCategoryPage = () => {
   const { token } = theme.useToken();
   const screens = Grid.useBreakpoint();
   const isDesktop = screens.md ?? false;
-  const [loadError, setLoadError] = useState(false);
 
   const entry = useMemo(() => entries.find((item) => item.slug === slug), [entries, slug]);
 
@@ -38,8 +37,8 @@ const StartListCategoryPage = () => {
           {entry.name}
         </Title>
         <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-          Lista startowa otwiera się w nowej karcie. Jeżeli potrzebujesz pobrać plik,
-          skorzystaj z poniższego przycisku lub odnośnika.
+          Poniżej wyświetla się lista startowa w formacie PDF. Jeżeli potrzebujesz pobrać plik,
+          skorzystaj z przycisku lub odnośnika.
         </Paragraph>
         {entry.categoryNames.length > 1 ? (
           <Text type="secondary">
@@ -49,14 +48,8 @@ const StartListCategoryPage = () => {
           <Text type="secondary">Kategoria: {entry.categoryNames[0]}</Text>
         )}
         <Flex gap={isDesktop ? 12 : 8} wrap>
-          <Button
-            icon={<DownloadOutlined />}
-            href={entry.assetHref}
-            target="_blank"
-            rel="noreferrer"
-            type="primary"
-          >
-            Pobierz listę
+          <Button icon={<DownloadOutlined />} href={entry.assetHref} target="_blank" rel="noreferrer" type="primary">
+            Pobierz PDF
           </Button>
           <Text type="secondary">
             Alternatywnie: <Link href={entry.assetHref} target="_blank" rel="noreferrer">otwórz w nowej karcie</Link>
@@ -64,27 +57,38 @@ const StartListCategoryPage = () => {
         </Flex>
       </Space>
 
-      {!loadError ? (
-        <Image
-          src={entry.assetHref}
-          alt={`Lista startowa dla kategorii ${entry.name}`}
-          style={{
-            width: "100%",
-            maxWidth: 940,
-            borderRadius: token.borderRadiusLG,
-            border: `1px solid ${token.colorBorder}`,
-          }}
-          onError={() => setLoadError(true)}
-          preview
-        />
-      ) : (
-        <Alert
-          type="error"
-          message="Brak podpiętego pliku JPG"
-          description="Umieść plik w katalogu public/start-lists i odśwież stronę, aby go wyświetlić."
-          showIcon
-        />
-      )}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 940,
+          borderRadius: token.borderRadiusLG,
+          border: `1px solid ${token.colorBorder}`,
+          overflow: "hidden",
+        }}
+      >
+        <object
+          data={entry.assetHref}
+          type="application/pdf"
+          width="100%"
+          style={{ height: isDesktop ? "85vh" : "70vh", display: "block" }}
+        >
+          <Flex align="center" justify="center" style={{ padding: 16 }}>
+            <Space direction="vertical" align="center">
+              <Alert
+                type="warning"
+                message="Nie udało się osadzić podglądu PDF"
+                description={
+                  <span>
+                    Twoja przeglądarka może nie obsługiwać wbudowanego podglądu PDF. Użyj powyższego przycisku
+                    „Pobierz PDF” lub <Link href={entry.assetHref} target="_blank" rel="noreferrer">otwórz w nowej karcie</Link>.
+                  </span>
+                }
+                showIcon
+              />
+            </Space>
+          </Flex>
+        </object>
+      </div>
     </Space>
   );
 };
