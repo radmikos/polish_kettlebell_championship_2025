@@ -52,7 +52,7 @@ type CategoryQueryResponse = {
 };
 
 // KLASYFIKACJA GENERALNA W KATEGORIACH
-let SHOW_GENERAL_CLASSIFICATION = true;
+let SHOW_GENERAL_CLASSIFICATION = false;
 
 type ProcessedCategoryRow = CategoryOverallRow & { displayRank: number };
 type DisciplineRow = ProcessedCategoryRow & { disciplineRank: number };
