@@ -370,6 +370,7 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "pistol_points_disp",
         "pull_up_place_disp",
         "pull_up_points_disp",
+        "tiebreak_points_disp",
         "placement_points_disp",
         "total_points_disp",
         "final_position_disp",
@@ -520,6 +521,12 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     pull_up_points_disp.short_description = "Punkty Pull-Up"
     pull_up_points_disp.admin_order_field = "pull_up_points"
 
+    def tiebreak_points_disp(self, obj):
+        return self._fmt(obj.tiebreak_points)
+
+    tiebreak_points_disp.short_description = "Tiebreak"
+    tiebreak_points_disp.admin_order_field = "tiebreak_points"
+
     def pull_up_place_disp(self, obj):
         return obj.pull_up_place or "-"
 
@@ -527,10 +534,15 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     pull_up_place_disp.admin_order_field = "pull_up_place"
 
     def placement_points_disp(self, obj):
-        return self._fmt(obj.placement_points)
+        base_value = obj.placement_points
+        tiebreak_value = obj.tiebreak_points or 0.0
+        if base_value is None and not tiebreak_value:
+            return "-"
+        total = (base_value or 0.0) + tiebreak_value
+        return self._fmt(total)
 
-    placement_points_disp.short_description = "Suma punktów z miejsc"
-    placement_points_disp.admin_order_field = "placement_points"
+    placement_points_disp.short_description = "Suma miejsc (z TB)"
+    placement_points_disp.admin_order_field = "total_points"
 
     def total_points_disp(self, obj):
         return self._fmt(obj.total_points)
