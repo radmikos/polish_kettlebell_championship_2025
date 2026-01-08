@@ -6,11 +6,14 @@ import { pageSectionStyle, panelCardBodyStyle, panelCardStyle } from "../theme";
 import { slugify } from "../utils/slug";
 
 const { Title, Paragraph, Text } = Typography;
- 
+const PATH_PREFIX = ""; 
+
+const buildStartListAssetHref = (slug: string): string => `${PATH_PREFIX}/start-lists/${slug}.pdf`;
+
 type StartListDefinition = {
   label: string;
   categories: string[];
-  assetSlug?: string;
+  assetSlug: string;
   slugOverride?: string;
 };
 
@@ -26,32 +29,36 @@ export type StartListsOutletContext = {
   entries: StartListEntry[];
 };
 
-const buildStartListAssetHref = (slug: string): string => `/start-lists/${slug}.pdf`;
-
 const startListDefinitions: StartListDefinition[] = [
   {
-    label: "Amator K65 i Junior K",
+    label: "Amator K65 + Junior K",
     categories: ["Amator K65", "Junior K"],
+    assetSlug: "1", // Odwołuje się do 1.pdf
   },
   {
     label: "Amator K +65",
     categories: ["Amator K +65"],
+    assetSlug: "2", // Odwołuje się do 2.pdf
   },
   {
     label: "Amator M85 + Junior M",
     categories: ["Amator M85", "Junior M"],
+    assetSlug: "3", // Odwołuje się do 3.pdf
   },
   {
     label: "Amator M+85",
     categories: ["Amator +85"],
+    assetSlug: "4", // Odwołuje się do 4.pdf
   },
   {
     label: "PRO K65 + PRO K+65",
     categories: ["PRO K65", "PRO K+65"],
+    assetSlug: "5", // Odwołuje się do 5.pdf
   },
   {
     label: "PRO M85 + PRO M+85",
     categories: ["PRO M85", "PRO M+85"],
+    assetSlug: "6", // Odwołuje się do 6.pdf
   },
 ];
 
@@ -68,7 +75,8 @@ const StartListsPage = () => {
   const startListEntries = useMemo<StartListEntry[]>(() => {
     return startListDefinitions.map((definition) => {
       const slug = definition.slugOverride ?? slugify(definition.label);
-      const assetSlug = definition.assetSlug ?? slug;
+      const assetSlug = definition.assetSlug;
+      
       return {
         id: slug,
         name: definition.label,
