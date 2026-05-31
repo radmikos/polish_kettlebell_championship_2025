@@ -62,7 +62,7 @@ const HomePage = () => {
             maxWidth: 400,
           }}
         >
-          Zobacz Regulamin Zawodów (PDF)
+          Zobacz Regulamin Zawodów
         </Button>
 
         {/* Grafika zawodów - TUTAJ ZMIANA NA 50% SZEROKOŚCI */}
