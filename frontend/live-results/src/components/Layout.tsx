@@ -20,11 +20,17 @@ type NavEntry = {
   key: string;
   path: string;
   text: string;
+  isExternal?: boolean; // Dodatkowe oznaczenie dla plików zewnętrznych/PDF
 };
 
+
 const navConfig: NavEntry[] = [
+  { key: "rules", path: "/regulamin.pdf", text: "Regulamin", isExternal: true }, 
+  { key: "results-2025", path: "/results-2025", text: "Wyniki 2025" },
+  /* Zakomentowane na później:
   { key: "live", path: "/live", text: "Transmisja live" },
   { key: "start-lists", path: "/start-lists", text: "Listy startowe" },
+  */
   { key: "contact", path: "/contact", text: "Kontakt" },
 ];
 
@@ -35,9 +41,13 @@ const Layout = () => {
   const { token } = theme.useToken();
   const currentYear = useMemo(() => new Date().getFullYear(), []);
 
+  // Aktywne podświetlenie (Regulamin jako PDF nie musi się podświetlać jako podstrona)
   const selectedKeys = useMemo(() => {
+    if (location.pathname.startsWith("/results-2025")) return ["results-2025"];
+ /* Zakomentowane na później:
     if (location.pathname.startsWith("/live")) return ["live"];
     if (location.pathname.startsWith("/start-lists")) return ["start-lists"];
+ */
     if (location.pathname.startsWith("/contact")) return ["contact"];
     return [];
   }, [location.pathname]);
@@ -93,7 +103,7 @@ const Layout = () => {
                 textDecoration: "none",
               }}
             >
-              Mistrzostwa Polski Kettlebell 2025
+              Mistrzostwa Polski Kettlebell 2026
             </Link>
           </Title>
 
@@ -104,7 +114,13 @@ const Layout = () => {
               disabledOverflow
               items={navConfig.map((entry) => ({
                 key: entry.key,
-                label: (
+                label: entry.isExternal ? (
+                  // Jeśli to plik PDF, otwórz w nowej karcie
+                  <a href={entry.path} target="_blank" rel="noopener noreferrer">
+                    {entry.text}
+                  </a>
+                ) : (
+                  // Jeśli to zwykła podstrona systemu
                   <Link to={entry.path}>
                     {entry.text}
                   </Link>
@@ -151,7 +167,11 @@ const Layout = () => {
           selectedKeys={selectedKeys}
           items={navConfig.map((entry) => ({
             key: entry.key,
-            label: (
+            label: entry.isExternal ? (
+              <a href={entry.path} target="_blank" rel="noopener noreferrer" onClick={() => setDrawerOpen(false)}>
+                {entry.text}
+              </a>
+            ) : (
               <Link to={entry.path} onClick={() => setDrawerOpen(false)}>
                 {entry.text}
               </Link>
