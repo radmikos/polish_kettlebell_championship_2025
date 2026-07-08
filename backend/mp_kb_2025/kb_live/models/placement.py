@@ -9,7 +9,7 @@ from .player import Player
 class CategoryPlacement(models.Model):
     """
     Pozycja zawodnika w KATEGORII dla KONKURENCJI,
-    liczona na podstawie JEDNEGO globalnego wyniku + tiebreak (+1) dla (player, category).
+    liczona na podstawie JEDNEGO globalnego wyniku.
     """
 
     category = models.ForeignKey(
@@ -71,13 +71,11 @@ class CategoryPlacement(models.Model):
             return None
         return None
 
-    # --- punkty z dogrywką (+1) ---
+    # --- punkty używane do rankingu w ramach konkurencji (bez kary tiebreak) ---
     @property
-    def points(self) -> float:
-        pts = self.base_points
-        if pts is None:
-            return 0.0
-        # +1 jeśli istnieje tiebreak dla (player, category)
-        if self.category.tiebreaks_applied.filter(player=self.player).exists():
-            return pts + 1.0
-        return pts
+    def points(self) -> float | None:
+        base = self.base_points
+        if base is None:
+            return None
+
+        return float(base)

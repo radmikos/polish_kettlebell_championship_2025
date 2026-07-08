@@ -52,6 +52,7 @@ export interface PlayerDetail extends PlayerSummary {
 export interface SnatchResult {
   kettlebell_weight: number | null;
   repetitions: number | null;
+  total: number | null;
   points: number | null;
   place: number | null;
 }

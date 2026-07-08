@@ -1,5 +1,11 @@
 from django import forms
 from django.contrib import admin
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.html import format_html
+from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 from django.db.models import Q, F, FloatField, ExpressionWrapper, Case, When, Value
 from django.db.models.functions import Greatest
 
@@ -21,7 +27,9 @@ from .models import (
 from import_export.admin import ImportExportModelAdmin
 from .resources import PlayerImportResource, PlayerExportResource
 from .models.overall import CategoryOverallResult
+from .models.participation import PlayerCategoryParticipation
 from .services.ranking import rank_category_overall
+from .models.choices import DISCIPLINE_NAMES
 
 
 # --- Clubs ---
@@ -37,19 +45,83 @@ class SportClubAdmin(admin.ModelAdmin):
 
 
 
+# --- Shared filters ---
+class PlayerCategoryListFilter(admin.SimpleListFilter):
+    title = _("Kategoria")
+    parameter_name = "player_category"
+
+    category_field_path = "player__categories"
+
+    def lookups(self, request, model_admin):
+        categories = Category.objects.order_by("name")
+        return [(str(category.pk), category.name) for category in categories]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if not value:
+            return queryset
+        try:
+            category_id = int(value)
+        except (TypeError, ValueError):
+            return queryset.none()
+        filter_key = f"{self.category_field_path}__id"
+        return queryset.filter(**{filter_key: category_id}).distinct()
+
+
 # --- Players ---
 @admin.register(Player)
 class PlayerAdmin(ImportExportModelAdmin):
     resource_classes = [PlayerImportResource]
     export_resource_classes = [PlayerExportResource]
-    list_display = ("surname", "name", "weight", "gender", "club", "categories_list")
+    list_display = ("surname", "name", "weight_display", "gender", "club", "categories_list")
     search_fields = ("surname", "name", "club__name", "categories__name")
     autocomplete_fields = ("club",)
     filter_horizontal = ("categories",)
 
+    class CategoriesListFilter(PlayerCategoryListFilter):
+        category_field_path = "categories"
+
+    list_filter = (CategoriesListFilter,)
+
+    class ParticipationInline(admin.TabularInline):
+        model = PlayerCategoryParticipation
+        extra = 0
+        can_delete = False
+        verbose_name = _("Udział w konkurencjach (kategoria)")
+        verbose_name_plural = _("Udziały w konkurencjach (kategorie)")
+        readonly_fields = ("category",)
+
+        def get_formset(self, request, obj=None, **kwargs):
+            from .forms import PlayerCategoryParticipationForm
+            # Ensure participation rows exist for all player's categories
+            if obj and getattr(obj, "pk", None):
+                from .models.participation import PlayerCategoryParticipation
+                cats = list(obj.categories.values_list("id", flat=True))
+                for cat_id in cats:
+                    PlayerCategoryParticipation.objects.get_or_create(player=obj, category_id=cat_id)
+            kwargs = kwargs or {}
+            kwargs["form"] = PlayerCategoryParticipationForm
+            return super().get_formset(request, obj, **kwargs)
+
+        def has_add_permission(self, request, obj=None):
+            return False
+
+        def has_delete_permission(self, request, obj=None):
+            return False
+
+    inlines = [ParticipationInline]
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related("club").prefetch_related("categories")
+
+    def weight_display(self, obj):
+        if obj.weight and obj.weight > 0:
+            return f"{obj.weight:.1f}"
+        return "-"
+
+    weight_display.short_description = _("Waga (kg)")
+    weight_display.admin_order_field = "weight"
 
     def categories_list(self, obj):
         return ", ".join(obj.categories.values_list("name", flat=True)) or "-"
@@ -64,6 +136,7 @@ class PlayerCategoryTiebreakAdmin(admin.ModelAdmin):
     search_fields = ("player__surname", "player__name", "category__name")
     autocomplete_fields = ("player", "category")
     list_select_related = ("player", "category")
+
 
 
 # Shared mixin for extra columns
@@ -115,6 +188,7 @@ class _ResultExtraColumnsMixin:
 # --- NEW: mixin ograniczający wybór zawodnika tylko do kategorii zawierających daną dyscyplinę ---
 class _DisciplinePlayerFilterMixin:
     discipline_code: str | None = None  # należy ustawić w podklasie
+    list_filter = (PlayerCategoryListFilter,)
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -122,7 +196,6 @@ class _DisciplinePlayerFilterMixin:
             # Gracze posiadający przynajmniej jedną kategorię z tą dyscypliną
             q = Q(categories__disciplines__contains=[self.discipline_code])
             if obj and obj.player_id:
-                # zachowaj aktualnego zawodnika nawet jeśli usunięto mu kategorię
                 q = Q(pk=obj.player_id) | q
             form.base_fields["player"].queryset = Player.objects.filter(q).distinct().order_by("surname", "name")
         return form
@@ -136,6 +209,7 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
         "player",
         "repetitions",
         "kettlebell_weight",
+        "total_lifted_weight_display",
         "place",
         "best_attempt_display",
         "percent_bw_display",
@@ -146,6 +220,7 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
     list_select_related = ("player",)
     readonly_fields = (
         "place",
+        "total_lifted_weight_display",
         "points_display",
         "best_attempt_display",
         "percent_bw_display",
@@ -176,6 +251,13 @@ class SnatchResultAdmin(_DisciplinePlayerFilterMixin, _ResultExtraColumnsMixin, 
     best_attempt_display.short_description = "Wynik (wzór)"
     # ordering for snatch: order by annotated best attempt value (kettlebell_weight)
     # admin_order_field assignments for the overridden methods are set below
+
+    def total_lifted_weight_display(self, obj: SnatchResult):
+        total = obj.total_lifted_weight
+        return round(total, 1) if total is not None else "-"
+
+    total_lifted_weight_display.short_description = "Total (kg)"
+    total_lifted_weight_display.admin_order_field = "total_lifted_weight"
 
 
 # Attempts based base admin
@@ -253,9 +335,28 @@ class PullUpResultAdmin(_AttemptsResultAdmin):
 # Overall category results
 @admin.register(CategoryOverallResult)
 class CategoryOverallResultAdmin(admin.ModelAdmin):
+    CATEGORY_FILTER_PARAM = "category__id__exact"
+    DISCIPLINE_POINTS_FIELDS = {
+        Discipline.SNATCH: "snatch_points",
+        Discipline.TGU: "tgu_points",
+        Discipline.SQUAT: "squat_points",
+        Discipline.SEE_SAW_PRESS: "see_saw_press_points",
+        Discipline.PISTOL: "pistol_points",
+        Discipline.PULL_UP: "pull_up_points",
+    }
+    ORDERED_DISCIPLINE_CODES = [
+        Discipline.SNATCH,
+        Discipline.TGU,
+        Discipline.SEE_SAW_PRESS,
+        Discipline.SQUAT,
+        Discipline.PISTOL,
+        Discipline.PULL_UP,
+    ]
+    change_list_template = "admin/kb_live/categoryoverallresult/change_list.html"
     # Kolumny w żądanej kolejności: Zawodnik, Kategorie, punkty z konkurencji, suma, miejsce
     list_display = (
-        "player",
+        "player_link",
+        "get_player_categories_display",
         "category_disp",
         "snatch_place_disp",
         "snatch_points_disp",
@@ -269,10 +370,13 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "pistol_points_disp",
         "pull_up_place_disp",
         "pull_up_points_disp",
+        "tiebreak_points_disp",
         "placement_points_disp",
         "total_points_disp",
         "final_position_disp",
     )
+    list_display_links = ("category_disp",)
+    list_filter = ("category",)
     search_fields = ("player__surname", "player__name", "category__name")
     autocomplete_fields = ("player", "category")
     readonly_fields = (
@@ -294,10 +398,52 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
         "counted_disciplines",
     )
     actions = (
+        "export_overall_results_as_html",
         "create_missing_overall",
         "recompute_overall",
         "recompute_overall_and_rank",
     )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.select_related("player", "player__club", "category").prefetch_related("player__categories")
+        category_filter_value = request.GET.get(self.CATEGORY_FILTER_PARAM)
+        if category_filter_value:
+            qs = qs.filter(category_id=category_filter_value)
+        return qs
+
+    def changelist_view(self, request, extra_context=None):
+        category_choices = Category.objects.order_by("name")
+        selected_category = request.GET.get(self.CATEGORY_FILTER_PARAM, "")
+
+        extra_context = extra_context or {}
+        extra_context.update(
+            {
+                "category_filter_choices": category_choices,
+                "selected_category_filter": selected_category,
+                "category_filter_param_name": self.CATEGORY_FILTER_PARAM,
+            }
+        )
+        return super().changelist_view(request, extra_context=extra_context)
+
+    @admin.display(description=_("Zawodnik"), ordering="player__surname")
+    def player_link(self, obj: CategoryOverallResult):
+        player = getattr(obj, "player", None)
+        if not player:
+            return "-"
+        url = reverse("admin:kb_live_player_change", args=[player.pk])
+        return format_html('<a href="{}">{}</a>', url, player.full_name)
+
+    @admin.display(description=_("Kategorie"))
+    def get_player_categories_display(self, obj: CategoryOverallResult) -> str:
+        player = getattr(obj, "player", None)
+        if not player:
+            return "-"
+        categories = getattr(player, "_prefetched_objects_cache", {}).get("categories")
+        if categories is None:
+            categories = list(player.categories.all())
+        names = [c.name for c in categories]
+        return ", ".join(names) if names else "-"
 
     # helper format
     def _fmt(self, value):
@@ -306,7 +452,7 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     def category_disp(self, obj):
         return obj.category
 
-    category_disp.short_description = "Kategorie"
+    category_disp.short_description = _("Kategoria")
     category_disp.admin_order_field = "category"
 
     def snatch_points_disp(self, obj):
@@ -375,6 +521,12 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     pull_up_points_disp.short_description = "Punkty Pull-Up"
     pull_up_points_disp.admin_order_field = "pull_up_points"
 
+    def tiebreak_points_disp(self, obj):
+        return self._fmt(obj.tiebreak_points)
+
+    tiebreak_points_disp.short_description = "Tiebreak"
+    tiebreak_points_disp.admin_order_field = "tiebreak_points"
+
     def pull_up_place_disp(self, obj):
         return obj.pull_up_place or "-"
 
@@ -382,10 +534,15 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
     pull_up_place_disp.admin_order_field = "pull_up_place"
 
     def placement_points_disp(self, obj):
-        return self._fmt(obj.placement_points)
+        base_value = obj.placement_points
+        tiebreak_value = obj.tiebreak_points or 0.0
+        if base_value is None and not tiebreak_value:
+            return "-"
+        total = (base_value or 0.0) + tiebreak_value
+        return self._fmt(total)
 
-    placement_points_disp.short_description = "Suma punktów z miejsc"
-    placement_points_disp.admin_order_field = "placement_points"
+    placement_points_disp.short_description = "Suma miejsc (z TB)"
+    placement_points_disp.admin_order_field = "total_points"
 
     def total_points_disp(self, obj):
         return self._fmt(obj.total_points)
@@ -441,6 +598,74 @@ class CategoryOverallResultAdmin(admin.ModelAdmin):
             self.message_user(request, f"Dodano {len(to_create)} nowych rekordów overall.")
         else:
             self.message_user(request, "Brak brakujących rekordów overall.")
+
+    @admin.action(description=_("Eksportuj podsumowanie wyników do HTML"))
+    def export_overall_results_as_html(self, request, queryset):
+        results_qs = (
+            queryset.select_related("player", "player__club", "category")
+            .prefetch_related("player__categories")
+            .order_by(
+                "category__name",
+                "final_position",
+                "placement_points",
+                "-total_points",
+                "player__surname",
+                "player__name",
+            )
+        )
+
+        if not results_qs.exists():
+            self.message_user(request, _("Brak wyników do wyeksportowania."))
+            return
+
+        results = list(results_qs)
+
+        discipline_candidates: set[str] = set()
+        for result in results:
+            category_disciplines = getattr(result.category, "disciplines", None) or []
+            discipline_candidates.update(code for code in category_disciplines if isinstance(code, str))
+
+        if not discipline_candidates:
+            discipline_candidates = set(self.ORDERED_DISCIPLINE_CODES)
+
+        discipline_columns = [
+            {
+                "code": code,
+                "name": DISCIPLINE_NAMES.get(code, code),
+                "field_name": self.DISCIPLINE_POINTS_FIELDS[code],
+            }
+            for code in self.ORDERED_DISCIPLINE_CODES
+            if code in discipline_candidates and code in self.DISCIPLINE_POINTS_FIELDS
+        ]
+
+        rows = []
+        for result in results:
+            categories = getattr(result.player, "_prefetched_objects_cache", {}).get("categories")
+            if categories is None:
+                categories = list(result.player.categories.all())
+            categories_str = ", ".join(cat.name for cat in categories) if categories else "---"
+            rows.append({"result": result, "categories_str": categories_str})
+
+        title = _("Podsumowanie Wyników Ogólnych")
+        category_names = sorted({r.category.name for r in results if getattr(r, "category", None)})
+        if len(category_names) == 1:
+            title = f"{title} — {category_names[0]}"
+
+        context = {
+            "title": title,
+            "results_with_cats": rows,
+            "discipline_columns": discipline_columns,
+        }
+
+        html_content = render_to_string("kb_live/export_results.html", context)
+        response = HttpResponse(html_content, content_type="text/html; charset=utf-8")
+
+        filename = "overall_results.html"
+        if len(category_names) == 1 and category_names[0]:
+            filename = f"overall_results_{slugify(category_names[0])}.html"
+
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
 
 
 # -- Set admin_order_field attributes for mixin display methods that rely on annotated fields

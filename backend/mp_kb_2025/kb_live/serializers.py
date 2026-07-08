@@ -116,6 +116,7 @@ class PlayerDetailSerializer(PlayerSummarySerializer):
         return {
             "kettlebell_weight": result.kettlebell_weight,
             "repetitions": result.repetitions,
+            "total_lifted_weight": getattr(result, "total_lifted_weight", None),
             "points": getattr(result, "points", None),
             "place": getattr(result, "place", None),
         }
@@ -175,6 +176,8 @@ class PlayerDetailSerializer(PlayerSummarySerializer):
 class SnatchResultSerializer(serializers.Serializer):
     kettlebell_weight = serializers.FloatField(allow_null=True)
     repetitions = serializers.IntegerField(allow_null=True)
+    total_lifted_weight = serializers.FloatField(allow_null=True)
+    total = serializers.FloatField(source="total_lifted_weight", allow_null=True)
     points = serializers.FloatField(allow_null=True)
     place = serializers.IntegerField(allow_null=True)
 
@@ -214,13 +217,7 @@ class CategoryPlacementSerializer(serializers.ModelSerializer):
         return obj.player_id in self._tiebreak_map()
 
     def get_points(self, obj: CategoryPlacement) -> float | None:
-        base_points = obj.base_points
-        if base_points is None:
-            return None
-        points = float(base_points)
-        if self.get_tiebreak_applied(obj):
-            points += 1.0
-        return points
+        return obj.points
 
 
 class CategoryResultsSerializer(serializers.ModelSerializer):
@@ -259,7 +256,7 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
         )
         read_only_fields = fields
 
-    def _attempts_payload(self, obj) -> dict[str, float | None] | None:
+    def _attempts_payload(self, obj) -> dict[str, float | int | None] | None:
         return AttemptsResultSerializer(
             {
                 "attempt_1": getattr(obj, "attempt_1", None),
@@ -267,6 +264,7 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
                 "attempt_3": getattr(obj, "attempt_3", None),
                 "best_attempt": getattr(obj, "best_attempt", None),
                 "points": getattr(obj, "points", None),
+                "place": getattr(obj, "place", None),
             }
         ).data if obj else None
 
@@ -306,7 +304,7 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
         }
 
     def get_tiebreak_applied(self, overall: CategoryOverallResult) -> bool:
-        return bool(overall.tiebreak_points and overall.tiebreak_points > 0)
+        return bool(overall.tiebreak_points)
 
     def get_placements(self, overall: CategoryOverallResult) -> list[dict[str, object]]:
         placements_map: Mapping[int, Mapping[str, CategoryPlacement]] = self.context.get("placements_map", {})
@@ -317,12 +315,8 @@ class CategoryResultsSerializer(serializers.ModelSerializer):
 
         for code in discipline_order:
             placement: CategoryPlacement | None = player_entries.get(code) if isinstance(player_entries, Mapping) else None
-            base_points = getattr(placement, "base_points", None) if placement else None
-            points = None
-            if base_points is not None:
-                points = float(base_points)
-                if self.get_tiebreak_applied(overall):
-                    points += 1.0
+            total_points = getattr(placement, "points", None) if placement else None
+            points = total_points if placement is not None else None
             data.append(
                 {
                     "discipline": code,

@@ -1,0 +1,74 @@
+import type { GlobalToken } from "antd/es/theme/interface";
+
+export type LayoutConstants = {
+  maxWidth: number;
+  headerHeight: number;
+};
+
+export const layoutConstants: LayoutConstants = {
+  maxWidth: 1600,
+  headerHeight: 64,
+};
+
+const fontFamilyUi =
+  '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
+const fontFamilyHeading = '"Bebas Neue", sans-serif';
+const fontFamilyBody = '"Oswald", sans-serif';
+
+export const seedTokens: Partial<GlobalToken> = {
+  colorPrimary: "#cf6400ff",
+  colorSuccess: "#4ade80",
+  colorWarning: "#616161ff",
+  colorError: "#ff0000ff",
+  colorErrorBg: "#2a0000ff",
+  colorErrorBorder: "#2a0000ff",
+  colorInfo: "#0bb6ff",
+  colorBgBase: "#0d0d0d",
+  colorBgContainer: "#202020ff",
+  colorBgElevated: "#cf6400ff",
+  colorTextBase: "#ffffffff",
+  colorBorder: "#ffffffff",
+  colorBorderSecondary: "#303b4d",
+  colorLink: "#ffffffff",
+  colorLinkHover: "#ffc857",
+  borderRadius: 12,
+  borderRadiusSM: 8,
+  borderRadiusLG: 16,
+  fontFamily: fontFamilyUi,
+  fontSize: 16,
+  fontSizeHeading1: 32,
+  fontSizeHeading2: 24,
+  fontSizeHeading3: 20,
+  fontSizeHeading4: 18,
+  fontSizeHeading5: 16,
+  fontWeightStrong: 600,
+  lineHeight: 1.6,
+  controlHeight: 40,
+  motionDurationMid: "0.2s",
+  motionDurationSlow: "0.3s",
+};
+
+export const aliasTokens: Partial<GlobalToken> = {
+  colorPrimaryBg: "#ffffffff",
+  colorPrimaryBorder: "#ffffffff",
+  colorPrimaryHover: "#1d5a76",
+  colorLinkActive: "#ffc857",
+  colorText: "#ffffffff",
+  colorTextSecondary: "#ffc857",
+  colorBgLayout: "#0d0d0d",
+  colorBgContainerDisabled: "#696969",
+  colorTextLabel: "rgba(255, 255, 255, 0.72)",
+  colorTextHeading: "#ffffffff",
+  controlHeightLG: 44,
+  controlHeightSM: 32,
+  fontFamily: fontFamilyUi,
+  colorFillSecondary: "rgba(28, 104, 196, 0.3)",
+  colorFillTertiary: "rgba(24, 24, 27, 0.64)",
+  colorFillAlter: "rgba(255, 255, 255, 0.08)",
+};
+
+export const typography = {
+  fontFamilyUi,
+  fontFamilyHeading,
+  fontFamilyBody,
+};
