@@ -33,12 +33,14 @@ class TGUResult(BaseBWPoints):
         )
 
     @property
-    def points(self) -> float:
+    def points(self) -> float | None:
         ctx = self._ctx
         if not ctx:
-            return 0.0
+            return None
         val = tgu_points(ctx, float(self.best_attempt or 0.0))
-        return round(val, 3) if val is not None else 0.0
+        if val is None:
+            return None
+        return round(val, 3)
 
     def __str__(self) -> str:
         return f"{self.player} · TGU={self.points if self.points is not None else 'N/A'}"

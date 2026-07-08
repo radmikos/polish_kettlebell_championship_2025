@@ -10,6 +10,7 @@ from kb_live.models import (
     Discipline,
     PistolResult,
     Player,
+    PlayerCategoryParticipation,
     PlayerCategoryTiebreak,
     PullUpResult,
     SeeSawPressResult,
@@ -53,6 +54,14 @@ def ensure_overall_for_player_categories(player: Player, category_ids: list[int]
     for cat in qs:
         obj, created = CategoryOverallResult.objects.get_or_create(player=player, category=cat)
         obj.recompute(save=True)
+
+
+def ensure_participation_for_player_categories(player: Player, category_ids: list[int] | None = None):
+    qs = player.categories.all()
+    if category_ids is not None:
+        qs = qs.filter(id__in=category_ids)
+    for cat in qs:
+        PlayerCategoryParticipation.objects.get_or_create(player=player, category=cat)
 
 
 def cleanup_player_results(player: Player, category_ids: Iterable[int] | None = None) -> set[int]:
@@ -131,15 +140,19 @@ def player_categories_changed(sender, instance: Player, action, reverse, pk_set,
     if action == "post_add":
         ensure_player_results(instance)
         ensure_overall_for_player_categories(instance, list(pk_set) if pk_set else None)
+        ensure_participation_for_player_categories(instance, list(pk_set) if pk_set else None)
         for cat_id in (pk_set or []):
             _schedule_overall_refresh(cat_id, [instance.pk])
     elif action == "post_remove":
         cat_ids = list(pk_set) if pk_set else []
         affected = cleanup_player_results(instance, cat_ids)
+        if cat_ids:
+            PlayerCategoryParticipation.objects.filter(player=instance, category_id__in=cat_ids).delete()
         for cat_id in affected:
             _schedule_overall_refresh(cat_id)
     elif action == "post_clear":
         affected = cleanup_player_results(instance, None)
+        PlayerCategoryParticipation.objects.filter(player=instance).delete()
         for cat_id in affected:
             _schedule_overall_refresh(cat_id)
 
@@ -166,3 +179,16 @@ def tiebreak_saved(sender, instance: PlayerCategoryTiebreak, **kwargs):
 @receiver(post_delete, sender=PlayerCategoryTiebreak)
 def tiebreak_deleted(sender, instance: PlayerCategoryTiebreak, **kwargs):
     _schedule_overall_refresh(instance.category_id, [instance.player_id])
+
+
+@receiver(post_save, sender=PlayerCategoryParticipation)
+def participation_saved(sender, instance: PlayerCategoryParticipation, **kwargs):
+    if kwargs.get("raw"):
+        return
+    _schedule_overall_refresh(instance.category_id, [instance.player_id])
+
+
+@receiver(post_delete, sender=PlayerCategoryParticipation)
+def participation_deleted(sender, instance: PlayerCategoryParticipation, **kwargs):
+    _schedule_overall_refresh(instance.category_id, [instance.player_id])
+

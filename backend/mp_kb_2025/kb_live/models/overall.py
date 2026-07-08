@@ -7,6 +7,7 @@ from .category import Category
 from .choices import Discipline
 from .placement import CategoryPlacement
 from .player import Player
+from .participation import PlayerCategoryParticipation
 
 
 class CategoryOverallResult(models.Model):
@@ -46,6 +47,11 @@ class CategoryOverallResult(models.Model):
     pull_up_place = models.PositiveIntegerField(_("Miejsce Pull-Up"), null=True, blank=True)
 
     tiebreak_points = models.FloatField(_("Punkty Tiebreak"), default=0.0)
+    bonus_points = models.FloatField(
+        _("Punkty dodatkowe"),
+        default=0.0,
+        help_text=_("Suma dodatkowych punktów przyznanych ręcznie w klasyfikacji generalnej."),
+    )
     total_points = models.FloatField(_("Suma punktów"), null=True, blank=True, db_index=True)
     placement_points = models.FloatField(_("Suma punktów z miejsc"), null=True, blank=True, db_index=True)
     counted_disciplines = models.PositiveSmallIntegerField(
@@ -103,6 +109,28 @@ class CategoryOverallResult(models.Model):
             out[r.discipline] = r.position
         return out
 
+    def _last_place_map(self) -> dict[str, int | None]:
+        """Zwraca aktualnie najgorsze (najwyższe) miejsce w kategorii dla każdej konkurencji."""
+        from django.db.models import Max
+
+        allowed = self._allowed_disciplines()
+        if not allowed:
+            return {}
+
+        qs = (
+            CategoryPlacement.objects.filter(category=self.category, discipline__in=allowed)
+            .values("discipline")
+            .annotate(max_pos=Max("position"))
+        )
+        result: dict[str, int | None] = {code: None for code in allowed}
+        for row in qs:
+            result[str(row["discipline"])] = row["max_pos"]
+        # Jeśli dla danej konkurencji nie istnieją jeszcze miejsca, przyjmij 1 jako „ostatnie”
+        for code in allowed:
+            if result.get(code) is None:
+                result[code] = 1
+        return result
+
     def recompute(self, save: bool = True) -> None:
         allowed_disciplines = self._allowed_disciplines()
         pts = self._points_map_from_player()
@@ -112,12 +140,8 @@ class CategoryOverallResult(models.Model):
             if key not in allowed_set:
                 return None
             value = pts.get(key)
-            if value is None:
-                return 0.0
-            try:
-                return float(value)
-            except (TypeError, ValueError):
-                return 0.0
+            base = float(value) if value is not None else 0.0
+            return base
 
         discipline_fields = [
             (Discipline.SNATCH, "snatch_points"),
@@ -135,13 +159,28 @@ class CategoryOverallResult(models.Model):
             if value is not None:
                 aggregated_points.append(float(value))
 
-        # Tiebreak flag (nie dodajemy do sumy punktów – osobne pole informacyjne)
+        # Kara tiebreak (odejmujemy 0.5 punktu od sumy końcowej)
         tb_exists = self.category.tiebreaks_applied.filter(player=self.player).exists()
-        self.tiebreak_points = 1.0 if tb_exists else 0.0
+        self.tiebreak_points = -0.5 if tb_exists else 0.0
 
-        drop_worst = bool(getattr(self.category, "drop_worst_result", False))
+        # Dodatkowe punkty wyłączone – zawsze 0.0
+        self.bonus_points = 0.0
+
+        drop_worst_enabled = bool(getattr(self.category, "drop_worst_result", False))
 
         placements = self._placements_map()
+        last_places = self._last_place_map()
+
+        # Udział zawodnika w konkurencjach w ramach kategorii (domyślnie wszystko True)
+        participation = None
+        try:
+            participation = PlayerCategoryParticipation.objects.get(player=self.player, category=self.category)
+            participation_map = participation.as_map()
+        except PlayerCategoryParticipation.DoesNotExist:
+            participation_map = {d: True for d in allowed_disciplines}
+
+        if Discipline.SNATCH in allowed_set:
+            participation_map[Discipline.SNATCH] = True
 
         place_fields = [
             (Discipline.SNATCH, "snatch_place"),
@@ -152,41 +191,83 @@ class CategoryOverallResult(models.Model):
             (Discipline.PULL_UP, "pull_up_place"),
         ]
 
+        ordered_allowed = [code for code, _field in place_fields if code in allowed_set]
+
+        selected_codes = [code for code in ordered_allowed if participation_map.get(code, True)]
+        if not selected_codes:
+            selected_codes = list(ordered_allowed)
+
+        selected_set = set(selected_codes)
+        selected_count = len(selected_codes)
+
+        counted_codes: list[str]
+        if selected_count >= 5:
+            counted_codes = ordered_allowed
+        elif selected_count == 4:
+            counted_codes = []
+            for code in ordered_allowed:
+                if code == Discipline.SNATCH or code in selected_set:
+                    counted_codes.append(code)
+        else:
+            counted_codes = ordered_allowed
+
+        counted_codes = list(dict.fromkeys(counted_codes))
+        counted_set = set(counted_codes)
+
         place_entries: list[tuple[str, int]] = []
         for code, attr_name in place_fields:
-            value = placements.get(code)
-            if isinstance(value, int) and value > 0:
-                setattr(self, attr_name, value)
-                if code in allowed_set:
-                    place_entries.append((code, value))
+            if code not in allowed_set:
+                setattr(self, attr_name, None)
+                continue
+
+            placement_value = placements.get(code)
+            fallback_value = last_places.get(code)
+
+            effective_value: int | None = None
+            if isinstance(placement_value, int) and placement_value > 0:
+                effective_value = placement_value
+            elif isinstance(fallback_value, int) and fallback_value > 0:
+                effective_value = fallback_value
+
+            if effective_value is not None:
+                setattr(self, attr_name, effective_value)
+                if code in counted_set:
+                    place_entries.append((code, effective_value))
             else:
                 setattr(self, attr_name, None)
 
-        counted_entries = list(place_entries)
-
-        if drop_worst and len(counted_entries) > 1:
-            worst_candidate: tuple[int, tuple[str, int]] | None = None
-            for idx, entry in enumerate(counted_entries):
-                code, place_value = entry
+        if drop_worst_enabled and selected_count >= 5 and len(place_entries) >= 5:
+            worst_idx = None
+            worst_value = None
+            for idx, (code, place_value) in enumerate(place_entries):
                 if code == Discipline.SNATCH:
                     continue
-                if worst_candidate is None or place_value > worst_candidate[1][1]:
-                    worst_candidate = (idx, entry)
-            if worst_candidate is not None:
-                counted_entries.pop(worst_candidate[0])
+                if worst_value is None or place_value > worst_value:
+                    worst_value = place_value
+                    worst_idx = idx
+            if worst_idx is not None:
+                final_entries = [entry for idx, entry in enumerate(place_entries) if idx != worst_idx]
+            else:
+                final_entries = place_entries
+        else:
+            final_entries = place_entries
 
-        if counted_entries:
-            counted_places = [place for _code, place in counted_entries]
-            self.counted_disciplines = len(counted_places)
+        if final_entries:
+            counted_places = [place for _code, place in final_entries]
+            self.counted_disciplines = len(final_entries)
             self.placement_points = float(sum(counted_places))
         else:
             self.counted_disciplines = 0
             self.placement_points = None
 
-        if self.placement_points is not None:
-            self.total_points = self.placement_points + (self.tiebreak_points or 0.0)
-        elif self.tiebreak_points:
-            self.total_points = float(self.tiebreak_points)
+        placement_value = self.placement_points
+        tiebreak_value = self.tiebreak_points or 0.0
+        bonus_value = 0.0
+
+        if placement_value is not None:
+            self.total_points = float(placement_value + tiebreak_value + bonus_value)
+        elif tiebreak_value or bonus_value:
+            self.total_points = float(tiebreak_value + bonus_value)
         else:
             self.total_points = None
 
@@ -206,6 +287,7 @@ class CategoryOverallResult(models.Model):
                     "pistol_place",
                     "pull_up_place",
                     "tiebreak_points",
+                    "bonus_points",
                     "total_points",
                     "placement_points",
                     "counted_disciplines",
